@@ -7,6 +7,7 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
+	acommon "github.com/atoyr/goshooting/common"
 	"github.com/atoyr/goshooting/entitys"
 )
 
@@ -32,14 +33,9 @@ func (gs *GameSystem) New(w *ecs.World) {
 	gs.playerBulletStartCount = 0
 
 	// load texture
-	playerTexture, err := common.LoadedSprite("textures/player.png")
-	if err != nil {
-		fmt.Println("Unable to load texture: " + err.Error())
-	}
-	enemyTexture, err := common.LoadedSprite("textures/enemy.png")
-	if err != nil {
-		fmt.Println("Unable to load texture: " + err.Error())
-	}
+	playerTexture := acommon.GetTexture("textures/player.png")
+	enemyTexture := acommon.GetTexture("textures/enemy.png")
+	acommon.GetTexture("textures/bullet3.png")
 
 	// Create Entity
 	// Player
@@ -116,13 +112,10 @@ func (gs *GameSystem) Update(dt float32) {
 
 	if isshot && gs.playerBulletStartCount%5 == 0 {
 		gs.playerBulletStartCount += 1
-		texture, err := common.LoadedSprite("textures/bullet3.png")
-		if err != nil {
-			fmt.Println("Unable to load texture: " + err.Error())
-		}
+		bulletTexture := acommon.GetTexture("textures/bullet3.png")
 		bb := entitys.NewBulletBuilder(
 			&common.RenderComponent{
-				Drawable: texture,
+				Drawable: bulletTexture,
 				Scale:    engo.Point{X: 0.5, Y: 0.5},
 			},
 			&common.SpaceComponent{
