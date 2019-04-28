@@ -16,21 +16,31 @@ type myScene struct{}
 func (*myScene) Type() string { return "goshooting" }
 
 func (*myScene) Preload() {
+	// File Load
 	engo.Files.Load("textures/player.png")
+	engo.Files.Load("textures/bullet1.png")
+	engo.Files.Load("textures/bullet2.png")
+	engo.Files.Load("textures/bullet3.png")
+	engo.Files.Load("textures/enemy.png")
 	engo.Files.LoadReaderData("go.ttf", bytes.NewReader(gosmallcaps.TTF))
 	common.SetBackground(color.White)
 }
 
 func (*myScene) Setup(u engo.Updater) {
-	engo.Input.RegisterButton("MoveRight", engo.KeyD, engo.KeyArrowRight)
-	engo.Input.RegisterButton("MoveLeft", engo.KeyA, engo.KeyArrowLeft)
-	engo.Input.RegisterButton("MoveUp", engo.KeyW, engo.KeyArrowUp)
-	engo.Input.RegisterButton("MoveDown", engo.KeyS, engo.KeyArrowDown)
-	engo.Input.RegisterButton("LowSpeed", engo.KeySpace)
+	// Button Register
+	engo.Input.RegisterButton("MoveRight", engo.KeyL, engo.KeyArrowRight)
+	engo.Input.RegisterButton("MoveLeft", engo.KeyJ, engo.KeyArrowLeft)
+	engo.Input.RegisterButton("MoveUp", engo.KeyI, engo.KeyArrowUp)
+	engo.Input.RegisterButton("MoveDown", engo.KeyK, engo.KeyArrowDown)
+	engo.Input.RegisterButton("LowSpeed", engo.KeyLeftShift)
+	engo.Input.RegisterButton("Shot", engo.KeyZ)
 	world, _ := u.(*ecs.World)
+	fps := common.FPSSystem{Display: false, Terminal: true}
 
 	world.AddSystem(&common.RenderSystem{})
-	world.AddSystem(&system.PlayerSystem{})
+	world.AddSystem(&system.GameSystem{})
+	world.AddSystem(&system.HUDSystem{})
+	world.AddSystem(&fps)
 }
 
 func (*myScene) Exit() {
@@ -40,8 +50,8 @@ func (*myScene) Exit() {
 func main() {
 	opts := engo.RunOptions{
 		Title:          "goshooting",
-		Width:          400,
-		Height:         300,
+		Width:          1280,
+		Height:         720,
 		StandardInputs: true,
 		NotResizable:   true,
 	}
