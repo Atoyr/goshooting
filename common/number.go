@@ -2,6 +2,7 @@ package common
 
 import (
 	"errors"
+	"fmt"
 
 	engoCommon "github.com/EngoEngine/engo/common"
 )
@@ -9,24 +10,41 @@ import (
 type NumberSize string
 
 const Number_8_48 NumberSize = "number_8_48"
+const Number_16_16 NumberSize = "number_16_16"
 
 var number_8_48_spritsheet *engoCommon.Spritesheet
+var number_16_16_spritsheet *engoCommon.Spritesheet
 
-func InitializeNumber_8_48(url string) {
-	s := engoCommon.NewSpritesheetFromFile(url, 8, 48)
+func InitializeNumber(numberSize NumberSize, url string) {
+	var s *engoCommon.Spritesheet
+	switch numberSize {
+	case Number_8_48:
+		s = engoCommon.NewSpritesheetFromFile(url, 8, 48)
+		number_8_48_spritsheet = s
+	case Number_16_16:
+		s = engoCommon.NewSpritesheetFromFile(url, 16, 16)
+		number_16_16_spritsheet = s
+		fmt.Println(s.CellCount())
+	default:
+		return
+	}
+
 	tc := NewTextureContainer()
 	for i := 0; i < s.CellCount(); i++ {
-		str := string(Number_8_48) + string(i)
+		str := string(numberSize) + string(i)
 		t := s.Cell(i)
 		tc[str] = &t
 	}
-	number_8_48_spritsheet = s
 }
 
 func isNumberInitialize(numSize NumberSize) error {
 	switch numSize {
 	case Number_8_48:
 		if number_8_48_spritsheet == nil {
+			return errors.New("Not Initialize ")
+		}
+	case Number_16_16:
+		if number_16_16_spritsheet == nil {
 			return errors.New("Not Initialize ")
 		}
 	}

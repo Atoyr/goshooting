@@ -44,13 +44,13 @@ func (hud *HUDSystem) New(w *ecs.World) {
 		Height:   8,
 	}
 
-	acommon.InitializeNumber_8_48("textures/number_8_48.png")
+	acommon.InitializeNumber(acommon.Number_16_16, "textures/number_16_16.png")
 	space2 := &common.SpaceComponent{
 		Position: engo.Point{X: 150, Y: 150},
 		Width:    150,
 		Height:   150,
 	}
-	numbuilder, err := entitys.NewNumberBuilder(acommon.Number_8_48, engo.Point{X: 2, Y: 2}, space2)
+	numbuilder, err := entitys.NewNumberBuilder(acommon.Number_16_16, engo.Point{X: 2, Y: 2}, space2)
 	if err != nil {
 		return
 	}
