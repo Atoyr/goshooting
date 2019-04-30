@@ -42,6 +42,7 @@ func NewNumberBuilder(size acommon.NumberSize, scale engo.Point, sc *common.Spac
 		Size:            0,
 		Mergin:          engo.Point{X: 0, Y: 0},
 	}
+	em.MoveFunc = em.EntityMove
 	return &NumberBuilder{
 		EntityModel: em,
 		numbers:     n,

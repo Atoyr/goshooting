@@ -4,7 +4,6 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
-	acommon "github.com/atoyr/goshooting/common"
 )
 
 type EnemyBuilder struct {
@@ -27,6 +26,7 @@ func NewEnemyBuilder(rc *common.RenderComponent, sc *common.SpaceComponent) *Ene
 		Size:            0,
 		Mergin:          engo.Point{X: 0, Y: 0},
 	}
+	em.MoveFunc = em.EntityMove
 	return &EnemyBuilder{
 		EntityModel: &em,
 		speed:       0,
@@ -55,21 +55,6 @@ func (e *EnemyBuilder) Build() *Enemy {
 	}
 }
 
-func (e *Enemy) Move(vx, vy, speed, angle float32) engo.Point {
-	s := acommon.NewSetting()
-	e.EntityModel.VirtualPosition.X += vx * speed
-	e.EntityModel.VirtualPosition.Y += vy * speed
-	ret := s.ConvertRenderPosition(e.EntityModel.convertPosition())
-	e.EntityModel.SpaceComponent.Position = ret
-
-	return ret
-}
 func (e *Enemy) GetSpeed() float32 {
 	return e.speed
-}
-
-func (e *Enemy) Atack(frame uint64, playerPoint engo.Point) []*Bullet {
-	bullets := make([]*Bullet, 1)
-
-	return bullets
 }

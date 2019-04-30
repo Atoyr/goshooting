@@ -4,7 +4,6 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
-	acommon "github.com/atoyr/goshooting/common"
 )
 
 type BulletBuilder struct {
@@ -27,6 +26,7 @@ func NewBulletBuilder(rc *common.RenderComponent, sc *common.SpaceComponent) *Bu
 		Size:            0,
 		Mergin:          engo.Point{X: 0, Y: 0},
 	}
+	em.MoveFunc = em.EntityMove
 	return &BulletBuilder{
 		EntityModel: &em,
 		speed:       0,
@@ -53,16 +53,6 @@ func (b *BulletBuilder) Build() *Bullet {
 	return &Bullet{
 		BulletBuilder: b,
 	}
-}
-
-func (b *Bullet) Move(vx, vy, speed, angle float32) engo.Point {
-	s := acommon.NewSetting()
-	b.EntityModel.VirtualPosition.X += vx * speed
-	b.EntityModel.VirtualPosition.Y += vy * speed
-	ret := s.ConvertRenderPosition(b.EntityModel.convertPosition())
-	b.EntityModel.SpaceComponent.Position = ret
-
-	return ret
 }
 
 func (b *Bullet) GetSpeed() float32 {

@@ -66,7 +66,7 @@ func (b *PlayerBuilder) Build() *Player {
 }
 
 // Move is move
-func (p *Player) Move(vx, vy, speed, angle float32) engo.Point {
+func (p *Player) Move(vx, vy, speed float32) {
 	s := acommon.NewSetting()
 	x := p.EntityModel.VirtualPosition.X
 	y := p.EntityModel.VirtualPosition.Y
@@ -93,10 +93,9 @@ func (p *Player) Move(vx, vy, speed, angle float32) engo.Point {
 	ret := s.ConvertRenderPosition(p.EntityModel.convertPosition())
 	p.SpaceComponent.Position = ret
 
-	return ret
 }
 
-func (p *Player) GetMoveInfo(isleft, isright, isup, isdown, islowspeed bool) (vx, vy, speed, angle float32) {
+func (p *Player) GetMoveInfo(isleft, isright, isup, isdown, islowspeed bool) (vx, vy, speed float32) {
 	vx = 0
 	vy = 0
 	if islowspeed {
@@ -114,5 +113,5 @@ func (p *Player) GetMoveInfo(isleft, isright, isup, isdown, islowspeed bool) (vx
 	} else if !isup && isdown {
 		vy = 1
 	}
-	return vx, vy, speed, 0
+	return vx, vy, speed
 }

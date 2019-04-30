@@ -4,6 +4,7 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
+	acommon "github.com/atoyr/goshooting/common"
 )
 
 type EntityBuilder interface {
@@ -14,7 +15,7 @@ type EntityBuilder interface {
 }
 
 type EntityInterface interface {
-	Move(vx, vy, speed, angle float32) engo.Point
+	Move(vx, vy, speed float32) engo.Point
 	Attack(playervx, playervy, speed, angle float32)
 	AddedRenderSystem(rs *common.RenderSystem)
 	GetId() uint64
@@ -22,7 +23,7 @@ type EntityInterface interface {
 	GetPoint() engo.Point
 }
 
-type EntityMoveFunc func(vx, vy, speed, angle float32) engo.Point
+type EntityMoveFunc func(vx, vy, speed float32)
 type EntityAttackFunc func(playervx, playervy, speed, angle float32)
 
 type EntityModel struct {
@@ -41,8 +42,8 @@ func (e *EntityModel) convertPosition() engo.Point {
 	return engo.Point{X: e.VirtualPosition.X - e.Mergin.X, Y: e.VirtualPosition.Y - e.Mergin.Y}
 }
 
-func (e *EntityModel) Move(vx, vy, speed, angle float32) engo.Point {
-	return e.MoveFunc(vx, vy, speed, angle)
+func (e *EntityModel) Move(vx, vy, speed float32) {
+	e.MoveFunc(vx, vy, speed)
 }
 
 func (e *EntityModel) Attack(playervx, playervy, speed, angle float32) {
@@ -60,4 +61,11 @@ func (e *EntityModel) GetPoint() engo.Point {
 }
 func (e *EntityModel) GetVPoint() engo.Point {
 	return e.VirtualPosition
+}
+func (e *EntityModel) EntityMove(vx, vy, speed float32) {
+	s := acommon.NewSetting()
+	e.VirtualPosition.X += vx * speed
+	e.VirtualPosition.Y += vy * speed
+	ret := s.ConvertRenderPosition(e.convertPosition())
+	e.SpaceComponent.Position = ret
 }

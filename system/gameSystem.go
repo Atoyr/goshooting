@@ -107,7 +107,7 @@ func (gs *GameSystem) Update(dt float32) {
 
 	// PlayerBullet Update
 	for _, pb := range gs.playerBulletEntitys {
-		pb.Move(0, -1, pb.GetSpeed(), 0)
+		pb.Move(0, -1, pb.GetSpeed())
 	}
 
 	if isshot && gs.playerBulletStartCount%5 == 0 {

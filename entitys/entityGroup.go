@@ -13,11 +13,11 @@ type EntityGroup struct {
 	Mergin          engo.Point
 }
 
-func (eg *EntityGroup) Move(vx, vy, speed, angle float32) engo.Point {
+func (eg *EntityGroup) Move(vx, vy, speed float32) engo.Point {
 	eg.VirtualPosition.X += vx
 	eg.VirtualPosition.Y += vy
 	for i := range eg.entityModels {
-		eg.entityModels[i].MoveFunc(vx, vy, speed, 0)
+		eg.entityModels[i].MoveFunc(vx, vy, speed)
 	}
 	return eg.VirtualPosition
 }
