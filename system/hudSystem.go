@@ -21,14 +21,16 @@ func (HUDScoreMessage) Type() string {
 }
 
 type HUDSystem struct {
-	score int
-	frame uint64
+	score  int
+	frame  uint64
+	zindex float32
 
 	number *entitys.Number
 }
 
 // New is called when the system is added to the world
 func (hud *HUDSystem) New(w *ecs.World) {
+	hud.zindex = 100
 	c := color.RGBA{100, 100, 100, 255}
 	r := common.Rectangle{BorderWidth: 4, BorderColor: c}
 	hud.frame = 0
@@ -38,6 +40,7 @@ func (hud *HUDSystem) New(w *ecs.World) {
 		Drawable: r,
 		Scale:    engo.Point{X: 1, Y: 1},
 	}
+	render.SetZIndex(hud.zindex)
 	space := &common.SpaceComponent{
 		Position: engo.Point{X: 0, Y: 0},
 		Width:    100,
@@ -55,6 +58,7 @@ func (hud *HUDSystem) New(w *ecs.World) {
 		return
 	}
 	hud.number = numbuilder.Build()
+	hud.number.SetZIndex(hud.zindex)
 	hud.number.SetNumber(0)
 
 	for _, system := range w.Systems() {

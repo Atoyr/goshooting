@@ -78,6 +78,12 @@ func (nb *NumberBuilder) Build() *Number {
 	}
 }
 
+func (n *Number) SetZIndex(value float32) {
+	for i := range n.numbers {
+		n.numbers[i].SetZIndex(value)
+	}
+}
+
 func (n *Number) SetNumber(value int) {
 	num := value % 10
 	n.value = num
