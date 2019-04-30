@@ -79,13 +79,13 @@ func (p *Player) Move(vx, vy, speed float32) {
 	max := s.GetGameAreaSize()
 	if x < p.EntityModel.Mergin.X {
 		x = p.EntityModel.Mergin.X
-	} else if x > max.X-p.EntityModel.Mergin.X {
-		x = max.X - p.EntityModel.Mergin.X
+	} else if x > max.X {
+		x = max.X
 	}
 	if y < p.EntityModel.Mergin.Y {
 		y = p.EntityModel.Mergin.Y
-	} else if y > max.Y-p.EntityModel.Mergin.Y {
-		y = max.Y - p.EntityModel.Mergin.Y
+	} else if y > max.Y {
+		y = max.Y
 	}
 	p.EntityModel.VirtualPosition.X = x
 	p.EntityModel.VirtualPosition.Y = y
