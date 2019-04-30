@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"image/color"
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
@@ -25,7 +24,7 @@ func (*myScene) Preload() {
 	engo.Files.Load("textures/number_8_48.png")
 	engo.Files.Load("textures/number_16_16.png")
 	engo.Files.LoadReaderData("go.ttf", bytes.NewReader(gosmallcaps.TTF))
-	common.SetBackground(color.Black)
+	//common.SetBackground(color.Black)
 }
 
 func (*myScene) Setup(u engo.Updater) {
@@ -43,6 +42,7 @@ func (*myScene) Setup(u engo.Updater) {
 	world.AddSystem(&common.AnimationSystem{})
 	world.AddSystem(&system.GameSystem{})
 	world.AddSystem(&system.HUDSystem{})
+	world.AddSystem(&system.OutsideGameAreaSystem{})
 	world.AddSystem(&fps)
 }
 
