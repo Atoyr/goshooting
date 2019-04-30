@@ -22,8 +22,9 @@ func (*myScene) Preload() {
 	engo.Files.Load("textures/bullet2.png")
 	engo.Files.Load("textures/bullet3.png")
 	engo.Files.Load("textures/enemy.png")
+	engo.Files.Load("textures/number_8_48.png")
 	engo.Files.LoadReaderData("go.ttf", bytes.NewReader(gosmallcaps.TTF))
-	common.SetBackground(color.White)
+	common.SetBackground(color.Black)
 }
 
 func (*myScene) Setup(u engo.Updater) {
@@ -38,6 +39,7 @@ func (*myScene) Setup(u engo.Updater) {
 	fps := common.FPSSystem{Display: false, Terminal: true}
 
 	world.AddSystem(&common.RenderSystem{})
+	world.AddSystem(&common.AnimationSystem{})
 	world.AddSystem(&system.GameSystem{})
 	world.AddSystem(&system.HUDSystem{})
 	world.AddSystem(&fps)
