@@ -23,7 +23,7 @@ func NewSetting() *Setting {
 	settingOnce.Do(func() {
 		canvas := engo.Point{X: 1280, Y: 720}
 		renderPositionRate := engo.Point{X: 0.5, Y: 0.5}
-		gameAreaSize := engo.Point{X: 387, Y: 688}
+		gameAreaSize := engo.Point{X: 516, Y: 688}
 		renderScale := float32(1)
 		setting = &Setting{
 			canvas:             canvas,
