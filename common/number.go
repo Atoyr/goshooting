@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 
+	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
 )
 
@@ -56,6 +57,19 @@ func isNumberInitialize(numSize NumberSize) error {
 		}
 	}
 	return nil
+}
+
+func GetNumberSize(numSize NumberSize) engo.Point {
+	p := engo.Point{X: 0, Y: 0}
+	switch numSize {
+	case Number_8_48:
+		p.Add(engo.Point{X: 8, Y: 48})
+	case Number_16_16:
+		p.Add(engo.Point{X: 16, Y: 16})
+	case Number_16_32:
+		p.Add(engo.Point{X: 16, Y: 32})
+	}
+	return p
 }
 
 func GetNumberTexture(value int, numSize NumberSize) (*engoCommon.Texture, error) {
