@@ -38,7 +38,7 @@ func (hud *HUDSystem) New(w *ecs.World) {
 	basic := ecs.NewBasic()
 	render := &common.RenderComponent{
 		Drawable: r,
-		Scale:    engo.Point{X: 1, Y: 1},
+		Scale:    engo.Point{X: 3, Y: 3},
 	}
 	render.SetZIndex(hud.zindex)
 	space := &common.SpaceComponent{
@@ -47,13 +47,13 @@ func (hud *HUDSystem) New(w *ecs.World) {
 		Height:   8,
 	}
 
-	acommon.InitializeNumber(acommon.Number_16_16, "textures/number_16_16.png")
+	acommon.InitializeNumber(acommon.Number_16_32, "textures/number_16_32.png")
 	space2 := &common.SpaceComponent{
-		Position: engo.Point{X: 150, Y: 150},
+		Position: engo.Point{X: 500, Y: 150},
 		Width:    150,
 		Height:   150,
 	}
-	numbuilder, err := entitys.NewNumberBuilder(acommon.Number_16_16, engo.Point{X: 2, Y: 2}, space2)
+	numbuilder, err := entitys.NewNumberBuilder(acommon.Number_16_32, engo.Point{X: 3, Y: 3}, space2)
 	if err != nil {
 		return
 	}

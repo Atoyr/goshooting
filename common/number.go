@@ -2,7 +2,6 @@ package common
 
 import (
 	"errors"
-	"fmt"
 
 	engoCommon "github.com/EngoEngine/engo/common"
 )
@@ -11,9 +10,11 @@ type NumberSize string
 
 const Number_8_48 NumberSize = "number_8_48"
 const Number_16_16 NumberSize = "number_16_16"
+const Number_16_32 NumberSize = "number_16_32"
 
 var number_8_48_spritsheet *engoCommon.Spritesheet
 var number_16_16_spritsheet *engoCommon.Spritesheet
+var number_16_32_spritsheet *engoCommon.Spritesheet
 
 func InitializeNumber(numberSize NumberSize, url string) {
 	var s *engoCommon.Spritesheet
@@ -24,7 +25,9 @@ func InitializeNumber(numberSize NumberSize, url string) {
 	case Number_16_16:
 		s = engoCommon.NewSpritesheetFromFile(url, 16, 16)
 		number_16_16_spritsheet = s
-		fmt.Println(s.CellCount())
+	case Number_16_32:
+		s = engoCommon.NewSpritesheetFromFile(url, 16, 32)
+		number_16_32_spritsheet = s
 	default:
 		return
 	}
@@ -45,6 +48,10 @@ func isNumberInitialize(numSize NumberSize) error {
 		}
 	case Number_16_16:
 		if number_16_16_spritsheet == nil {
+			return errors.New("Not Initialize ")
+		}
+	case Number_16_32:
+		if number_16_32_spritsheet == nil {
 			return errors.New("Not Initialize ")
 		}
 	}
