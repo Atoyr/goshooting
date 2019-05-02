@@ -36,6 +36,7 @@ type EntityModel struct {
 	Frame           uint64
 	MoveFunc        EntityMoveFunc
 	AttackFunc      EntityAttackFunc
+	IsRemoveTraget  bool
 }
 
 func (e *EntityModel) convertPosition() engo.Point {
@@ -68,4 +69,10 @@ func (e *EntityModel) EntityMove(vx, vy, speed float32) {
 	e.VirtualPosition.Y += vy * speed
 	ret := s.ConvertRenderPosition(e.convertPosition())
 	e.SpaceComponent.Position = ret
+}
+
+func (e *EntityModel) RemovedRenderSystem(rs *common.RenderSystem) uint64 {
+	i := e.BasicEntity.ID()
+	rs.Remove(e.BasicEntity)
+	return i
 }

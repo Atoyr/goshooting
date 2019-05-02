@@ -32,10 +32,10 @@ func (oga *OutsideGameAreaSystem) New(w *ecs.World) {
 		Drawable: rect,
 		Color:    color,
 	}
-	l.SetZIndex(10)
-	r.SetZIndex(10)
-	t.SetZIndex(10)
-	b.SetZIndex(10)
+	l.SetZIndex(100)
+	r.SetZIndex(100)
+	t.SetZIndex(100)
+	b.SetZIndex(100)
 
 	setting := acommon.NewSetting()
 	leftBasic := ecs.NewBasic()

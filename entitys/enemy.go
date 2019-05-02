@@ -4,6 +4,7 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
+	acommon "github.com/atoyr/goshooting/common"
 )
 
 type EnemyBuilder struct {
@@ -50,6 +51,14 @@ func (e *EnemyBuilder) Speed(s float32) *EnemyBuilder {
 	return e
 }
 func (e *EnemyBuilder) Build() *Enemy {
+	s := acommon.NewSetting()
+
+	p := s.ConvertRenderPosition(e.EntityModel.VirtualPosition)
+	drawableSize := engo.Point{X: e.RenderComponent.Drawable.Width() / 2, Y: e.RenderComponent.Drawable.Height() / 2}
+	drawableSize.Multiply(e.RenderComponent.Scale)
+	drawableSize.MultiplyScalar(-1)
+	p.Add(drawableSize)
+	e.SpaceComponent.Position = p
 	return &Enemy{
 		EnemyBuilder: e,
 	}
