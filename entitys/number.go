@@ -5,13 +5,13 @@ import (
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
-	acommon "github.com/atoyr/goshooting/common"
+	engoCommon "github.com/EngoEngine/engo/common"
+	"github.com/atoyr/goshooting/common"
 )
 
 type NumberBuilder struct {
-	*EntityModel
-	numbers []*common.RenderComponent
+	*Entity
+	numbers []*engoCommon.RenderComponent
 }
 
 type Number struct {
@@ -19,55 +19,47 @@ type Number struct {
 	value int
 }
 
-func NewNumberBuilder(size acommon.NumberSize, scale engo.Point, sc *common.SpaceComponent) (*NumberBuilder, error) {
-	n := make([]*common.RenderComponent, 10, 10)
-	t, err := acommon.GetNumberTextures(size)
+func NewNumberBuilder(size common.NumberSize, scale engo.Point, sc *engoCommon.SpaceComponent) (*NumberBuilder, error) {
+	n := make([]*engoCommon.RenderComponent, 10, 10)
+	t, err := common.GetNumberTextures(size)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	for i := range t {
-		rc := common.RenderComponent{
+		rc := engoCommon.RenderComponent{
 			Drawable: t[i],
 			Scale:    scale,
 			Hidden:   true,
 		}
 		n[i] = &rc
 	}
-	em := &EntityModel{
-		BasicEntity:     ecs.NewBasic(),
-		RenderComponent: *n[0],
-		SpaceComponent:  *sc,
-		VirtualPosition: engo.Point{X: 0, Y: 0},
-		Size:            0,
-		Mergin:          engo.Point{X: 0, Y: 0},
+	em := &Entity{
+		basicEntity:            ecs.NewBasic(),
+		renderComponent:        n[0],
+		spaceComponent:         sc,
+		virtualPosition:        engo.Point{X: 0, Y: 0},
+		collisionDetectionSize: 0,
+		mergin:                 engo.Point{X: 0, Y: 0},
 	}
 	em.MoveFunc = em.EntityMove
 	return &NumberBuilder{
-		EntityModel: em,
-		numbers:     n,
+		Entity:  em,
+		numbers: n,
 	}, nil
 }
 
 // AddedRenderSystem is added render system
-func (ne *Number) AddedRenderSystem(rs *common.RenderSystem) {
-	for _, rc := range ne.numbers {
+func (n *Number) AddedRenderSystem(rs *engoCommon.RenderSystem) {
+	for _, rc := range n.numbers {
 		b := ecs.NewBasic()
-		ne.BasicEntity.AppendChild(&b)
-		rs.Add(&b, rc, &ne.SpaceComponent)
+		n.basicEntity.AppendChild(&b)
+		rs.Add(&b, rc, n.spaceComponent)
 	}
 }
 
-func (e *NumberBuilder) VirtualPosition(xy engo.Point) *NumberBuilder {
-	e.EntityModel.VirtualPosition = xy
-	return e
-}
-func (e *NumberBuilder) Size(s float32) *NumberBuilder {
-	e.EntityModel.Size = s
-	return e
-}
-func (e *NumberBuilder) Mergin(m engo.Point) *NumberBuilder {
-	e.EntityModel.Mergin = m
+func (e *NumberBuilder) SetVirtualPosition(xy engo.Point) *NumberBuilder {
+	e.virtualPosition = xy
 	return e
 }
 

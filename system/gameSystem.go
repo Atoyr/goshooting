@@ -6,8 +6,8 @@ import (
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
-	acommon "github.com/atoyr/goshooting/common"
+	engoCommon "github.com/EngoEngine/engo/common"
+	"github.com/atoyr/goshooting/common"
 	"github.com/atoyr/goshooting/entitys"
 )
 
@@ -16,10 +16,10 @@ type GameSystem struct {
 	world *ecs.World
 
 	framecount             uint64
-	playerEntity           *entitys.Player
-	playerBulletEntitys    map[uint64]*entitys.Bullet
-	enemyEntitys           map[uint64]*entitys.Enemy
-	enemyBulletEntitys     map[uint64]*entitys.Bullet
+	playerEntity           *entitys.Entity
+	playerBulletEntitys    map[uint64]*entitys.Entity
+	enemyEntitys           map[uint64]*entitys.Entity
+	enemyBulletEntitys     map[uint64]*entitys.Entity
 	playerBulletStartCount uint64
 	enemyBulletCount       uint64
 }
@@ -35,56 +35,57 @@ func (gs *GameSystem) New(w *ecs.World) {
 	gs.playerBulletStartCount = 0
 
 	// load texture
-	playerTexture := acommon.GetTexture("textures/player.png")
-	enemyTexture := acommon.GetTexture("textures/enemy.png")
-	acommon.GetTexture("textures/bullet3.png")
+	playerTexture := common.GetTexture("textures/player.png")
+	enemyTexture := common.GetTexture("textures/enemy.png")
+	common.GetTexture("textures/bullet3.png")
 
 	// Create Entity
 	// Player
-	playerBuilder := entitys.NewPlayerBuilder(
-		&common.RenderComponent{
+	playerBuilder := entitys.NewEntityBuilder(
+		&engoCommon.RenderComponent{
 			Drawable: playerTexture,
 			Scale:    engo.Point{X: 0.5, Y: 0.5},
 		},
-		&common.SpaceComponent{
+		&engoCommon.SpaceComponent{
 			Position: engo.Point{X: 0, Y: 0},
 			Width:    8,
 			Height:   8,
 		},
 	)
 
-	player := playerBuilder.VirtualPosition(engo.Point{X: 0, Y: 0}).Size(32).Mergin(engo.Point{X: 32, Y: 32}).LowSpeed(4).Speed(8).Build()
+	player := playerBuilder.BuildVirtualPosition(engo.Point{X: 0, Y: 0}).BuildSpeed(8).Build()
+	player.MoveFunc = player.EntityMoveForPlayer
 
-	playerBullets := map[uint64]*entitys.Bullet{}
-	enemys := map[uint64]*entitys.Enemy{}
-	enemyBullets := map[uint64]*entitys.Bullet{}
+	playerBullets := map[uint64]*entitys.Entity{}
+	enemys := map[uint64]*entitys.Entity{}
+	enemyBullets := map[uint64]*entitys.Entity{}
 
 	// enemy
-	enemyBuilder := entitys.NewEnemyBuilder(
-		&common.RenderComponent{
+	enemyBuilder := entitys.NewEntityBuilder(
+		&engoCommon.RenderComponent{
 			Drawable: enemyTexture,
 			Scale:    engo.Point{X: 0.2, Y: 0.2},
 		},
-		&common.SpaceComponent{
+		&engoCommon.SpaceComponent{
 			Width:  8,
 			Height: 8,
 		},
 	)
-	enemyBuilder.RenderComponent.SetZIndex(20)
-	e := enemyBuilder.VirtualPosition(engo.Point{X: 300, Y: 200}).Mergin(engo.Point{X: 32, Y: 32}).Build()
+	enemyBuilder.BuildZIndex(20)
+	e := enemyBuilder.BuildVirtualPosition(engo.Point{X: 300, Y: 200}).Build()
 
 	// Regist Entity
-	gs.playerEntity = player
+	gs.playerEntity = &player
 	gs.playerBulletEntitys = playerBullets
 	gs.enemyEntitys = enemys
 	gs.enemyBulletEntitys = enemyBullets
 	gs.enemyBulletCount = 0
 
-	enemys[e.GetId()] = e
+	enemys[e.GetID()] = &e
 
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
-		case *common.RenderSystem:
+		case *engoCommon.RenderSystem:
 			player.AddedRenderSystem(sys)
 			e.AddedRenderSystem(sys)
 		}
@@ -97,7 +98,7 @@ func (gs *GameSystem) Update(dt float32) {
 	if gs.framecount == math.MaxInt64 {
 		gs.framecount = 0
 	}
-	bulletEntity := make([]*entitys.Bullet, 0, 10)
+	bulletEntity := make([]*entitys.Entity, 0, 10)
 
 	// get inputs
 	isleft := engo.Input.Button("MoveLeft").Down()
@@ -108,7 +109,7 @@ func (gs *GameSystem) Update(dt float32) {
 	isshot := engo.Input.Button("Shot").Down()
 
 	// Player Update
-	gs.playerEntity.Move(gs.playerEntity.GetMoveInfo(isleft, isright, isup, isdown, islowspeed))
+	gs.playerEntity.Move(gs.playerEntity.GetPlayerMoveInfo(isleft, isright, isup, isdown, islowspeed))
 
 	// PlayerBullet Update
 	for _, pb := range gs.playerBulletEntitys {
@@ -117,21 +118,23 @@ func (gs *GameSystem) Update(dt float32) {
 
 	if isshot && gs.playerBulletStartCount%5 == 0 {
 		gs.playerBulletStartCount += 1
-		bulletTexture := acommon.GetTexture("textures/bullet3.png")
-		bb := entitys.NewBulletBuilder(
-			&common.RenderComponent{
+		bulletTexture := common.GetTexture("textures/bullet3.png")
+		bb := entitys.NewEntityBuilder(
+			&engoCommon.RenderComponent{
 				Drawable: bulletTexture,
 				Scale:    engo.Point{X: 0.5, Y: 0.5},
 			},
-			&common.SpaceComponent{
-				Width:  32,
-				Height: 32,
+			&engoCommon.SpaceComponent{
+				Position: gs.playerEntity.GetPoint(),
+				Width:    32,
+				Height:   32,
 			})
 
-		bb.VirtualPosition(gs.playerEntity.GetVPoint()).Size(32).Speed(16).Mergin(engo.Point{X: 32, Y: 32})
+		bb.BuildVirtualPosition(gs.playerEntity.GetVirtualPosition()).BuildSpeed(16)
 		b := bb.Build()
-		bulletEntity = append(bulletEntity, b)
-		gs.playerBulletEntitys[b.GetId()] = b
+		b.SetZIndex(10)
+		bulletEntity = append(bulletEntity, &b)
+		gs.playerBulletEntitys[b.GetID()] = &b
 	} else if !isshot {
 		gs.playerBulletStartCount = 0
 	} else {
@@ -148,27 +151,28 @@ func (gs *GameSystem) Update(dt float32) {
 		for _, e := range gs.enemyEntitys {
 			gs.enemyBulletCount += 1
 			for i := 0; i < 4; i++ {
-				bulletTexture := acommon.GetTexture("textures/bullet2.png")
-				bb := entitys.NewBulletBuilder(
-					&common.RenderComponent{
+				bulletTexture := common.GetTexture("textures/bullet2.png")
+				bb := entitys.NewEntityBuilder(
+					&engoCommon.RenderComponent{
 						Drawable: bulletTexture,
 						Scale:    engo.Point{X: 1.0, Y: 1.0},
 					},
-					&common.SpaceComponent{
+					&engoCommon.SpaceComponent{
 						Width:  32,
 						Height: 32,
 					})
-				bb.VirtualPosition(e.EntityModel.VirtualPosition).Size(32).Speed(4).Angle(float32(gs.framecount%72*5) + float32(90*i) + float32(gs.enemyBulletCount)).AngleRate(0)
-				bb.RenderComponent.SetZIndex(10)
+				bb.BuildVirtualPosition(e.GetVirtualPosition()).BuildSpeed(4).BuildAngle(float32(gs.framecount%72*5) + float32(90*i) + float32(gs.enemyBulletCount))
+				// Angle(
+				bb.SetZIndex(10)
 				b := bb.Build()
-				bulletEntity = append(bulletEntity, b)
-				gs.enemyBulletEntitys[b.GetId()] = b
+				bulletEntity = append(bulletEntity, &b)
+				gs.enemyBulletEntitys[b.GetID()] = &b
 			}
 		}
 	}
 	for _, system := range gs.world.Systems() {
 		switch sys := system.(type) {
-		case *common.RenderSystem:
+		case *engoCommon.RenderSystem:
 			for _, b := range bulletEntity {
 				b.AddedRenderSystem(sys)
 			}
