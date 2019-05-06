@@ -13,7 +13,8 @@ import (
 
 // GameSystem is goshooting Game base system
 type GameSystem struct {
-	world *ecs.World
+	world        *ecs.World
+	renderSystem *engoCommon.RenderSystem
 
 	framecount             uint64
 	playerEntity           *entitys.Entity
@@ -54,7 +55,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	)
 
 	player := playerBuilder.BuildVirtualPosition(engo.Point{X: 0, Y: 0}).BuildSpeed(8).Build()
-	player.MoveFunc = player.EntityMoveForPlayer
+	player.Move = player.EntityMoveForPlayer
 
 	playerBullets := map[uint64]*entitys.Entity{}
 	enemys := map[uint64]*entitys.Entity{}
@@ -86,6 +87,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
 		case *engoCommon.RenderSystem:
+			gs.renderSystem = sys
 			player.AddedRenderSystem(sys)
 			e.AddedRenderSystem(sys)
 		}
@@ -144,7 +146,13 @@ func (gs *GameSystem) Update(dt float32) {
 
 	// EnemyBullet Upate
 	for _, eb := range gs.enemyBulletEntitys {
+		s := common.NewSetting()
 		eb.Move(eb.GetMoveInfo())
+		virtualPosition := eb.GetVirtualPosition()
+		mergin := eb.GetMergin()
+		if (virtualPosition.X < -1*mergin.X || s.GetGameAreaSize().X+mergin.X < virtualPosition.X) || (virtualPosition.Y < -1*mergin.Y || s.GetGameAreaSize().Y+mergin.Y < virtualPosition.Y) {
+			gs.Remove(eb.GetBasicEntity())
+		}
 	}
 
 	if true {
@@ -179,6 +187,26 @@ func (gs *GameSystem) Update(dt float32) {
 		}
 	}
 
+	if gs.framecount%60 == 0 {
+		fmt.Printf("Entity count %d \n", len(gs.enemyBulletEntitys))
+	}
 }
 
-func (gs *GameSystem) Remove(ecs.BasicEntity) {}
+func (gs *GameSystem) Remove(b ecs.BasicEntity) {
+	for _, system := range gs.world.Systems() {
+		switch sys := system.(type) {
+		case *engoCommon.RenderSystem:
+			sys.Remove(b)
+		}
+	}
+	if _, ok := gs.playerBulletEntitys[b.ID()]; ok {
+
+		delete(gs.playerBulletEntitys, b.ID())
+	}
+	if _, ok := gs.enemyEntitys[b.ID()]; ok {
+		delete(gs.enemyEntitys, b.ID())
+	}
+	if _, ok := gs.enemyBulletEntitys[b.ID()]; ok {
+		delete(gs.enemyBulletEntitys, b.ID())
+	}
+}

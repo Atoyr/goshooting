@@ -20,18 +20,20 @@ func NewEntityBuilder(rc *engoCommon.RenderComponent, sc *engoCommon.SpaceCompon
 		renderComponent: rc,
 		spaceComponent:  sc,
 
-		virtualPosition:                 engo.Point{X: 0, Y: 0},
-		entitySize:                      engo.Point{X: rc.Drawable.Width() * rc.Scale.X, Y: rc.Drawable.Height() * rc.Scale.Y},
-		collisionDetectionRelativePoint: engo.Point{X: 0, Y: 0},
+		virtualPosition:                 &engo.Point{X: 0, Y: 0},
+		entitySize:                      &engo.Point{X: rc.Drawable.Width() * rc.Scale.X, Y: rc.Drawable.Height() * rc.Scale.Y},
+		collisionDetectionRelativePoint: &engo.Point{X: 0, Y: 0},
 		collisionDetectionSize:          0,
-		mergin:                          engo.Point{X: rc.Drawable.Width() * rc.Scale.X / 2, Y: rc.Drawable.Height() * rc.Scale.Y / 2},
+		mergin:                          &engo.Point{X: rc.Drawable.Width() * rc.Scale.X / 2, Y: rc.Drawable.Height() * rc.Scale.Y / 2},
 		speed:                           0,
 		angle:                           0,
 		speedRate:                       0,
 		angleRate:                       0,
 	}
-	e.MoveFunc = e.EntityMove
-	e.AttackFunc = func(playervx, playervy, speed, angle float32) {}
+	e.Move = e.EntityMove
+	e.Attack = func(playervx, playervy, speed, angle float32) {}
+	e.AddedRenderSystem = e.addedRenderSystem
+	e.RemovedRenderSystem = e.removedRenderSystem
 
 	return EntityBuilder{&e}
 }
@@ -97,58 +99,73 @@ type EntityMoveFunc func(vx, vy, speed float32)
 // EntityAttackFunc is called entity.Attack()
 type EntityAttackFunc func(playervx, playervy, speed, angle float32)
 
+type EntityAddedFunc func(rs *engoCommon.RenderSystem)
+type EntityRemovedFunc func(rs *engoCommon.RenderSystem) uint64
+
 // Entity is GameAreaEntityObject
 type Entity struct {
 	basicEntity     ecs.BasicEntity
 	renderComponent *engoCommon.RenderComponent
 	spaceComponent  *engoCommon.SpaceComponent
 
-	virtualPosition                 engo.Point // center of entity
-	entitySize                      engo.Point // entity Size
-	collisionDetectionRelativePoint engo.Point // Collision Detection Position from relative virtualPosition
-	collisionDetectionSize          float32    // Collision Detection Size circle
-	mergin                          engo.Point // entity mergin
+	virtualPosition                 *engo.Point // center of entity
+	entitySize                      *engo.Point // entity Size
+	collisionDetectionRelativePoint *engo.Point // Collision Detection Position from relative virtualPosition
+	collisionDetectionSize          float32     // Collision Detection Size circle
+	mergin                          *engo.Point // entity mergin
 	speed                           float32
 	angle                           float32
 	speedRate                       float32
 	angleRate                       float32
 
-	MoveFunc   EntityMoveFunc
-	AttackFunc EntityAttackFunc
-}
-
-// Move is call entytymodel.MoveFunc()
-func (e *Entity) Move(vx, vy, speed float32) {
-	e.MoveFunc(vx, vy, speed)
+	Move                EntityMoveFunc
+	Attack              EntityAttackFunc
+	AddedRenderSystem   EntityAddedFunc
+	RemovedRenderSystem EntityRemovedFunc
 }
 
 // AddedRenderSystem is added entitymodel at rendersystem
-func (e *Entity) AddedRenderSystem(rs *engoCommon.RenderSystem) {
+func (e *Entity) addedRenderSystem(rs *engoCommon.RenderSystem) {
 	rs.Add(&e.basicEntity, e.renderComponent, e.spaceComponent)
+}
+
+func (e *Entity) removedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
+	i := e.basicEntity.ID()
+	rs.Remove(e.basicEntity)
+	return i
 }
 
 // GetID is return BasicEntity.ID()
 func (e *Entity) GetID() uint64 {
 	return e.basicEntity.ID()
 }
+
+func (e *Entity) GetBasicEntity() ecs.BasicEntity {
+	return e.basicEntity
+}
+
 func (e *Entity) GetPoint() engo.Point {
 	return e.spaceComponent.Position
 }
 func (e *Entity) GetVirtualPosition() engo.Point {
-	return e.virtualPosition
+	return *e.virtualPosition
 }
 
 func (e *Entity) SetVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
-	e.virtualPosition = point
-	e.spaceComponent.Position = s.ConvertRenderPosition(*point.Subtract(e.mergin))
+	e.virtualPosition = &engo.Point{X: point.X, Y: point.Y}
+	e.spaceComponent.Position = s.ConvertRenderPosition(*point.Subtract(*e.mergin))
 }
 
 func (e *Entity) AddVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	e.virtualPosition.Add(point)
 	p := engo.Point{X: e.virtualPosition.X, Y: e.virtualPosition.Y}
-	e.spaceComponent.Position = s.ConvertRenderPosition(*p.Subtract(e.mergin))
+	e.spaceComponent.Position = s.ConvertRenderPosition(*p.Subtract(*e.mergin))
+}
+
+func (e *Entity) GetMergin() engo.Point {
+	return *e.mergin
 }
 
 func (e *Entity) GetSpeed() float32 {
@@ -190,7 +207,6 @@ func (e *Entity) SetZIndex(index float32) {
 func (e *Entity) EntityMove(vx, vy, speed float32) {
 	p := engo.Point{X: vx * speed, Y: vy * speed}
 	e.AddVirtualPosition(p)
-
 }
 
 func (e *Entity) EntityMoveForPlayer(vx, vy, speed float32) {
@@ -247,10 +263,4 @@ func (e *Entity) GetPlayerMoveInfo(isleft, isright, isup, isdown, islowspeed boo
 		vy = 1
 	}
 	return vx, vy, speed
-}
-
-func (e *Entity) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
-	i := e.basicEntity.ID()
-	rs.Remove(e.basicEntity)
-	return i
 }

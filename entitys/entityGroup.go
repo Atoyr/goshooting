@@ -17,7 +17,7 @@ func (eg *EntityGroup) Move(vx, vy, speed float32) engo.Point {
 	eg.VirtualPosition.X += vx
 	eg.VirtualPosition.Y += vy
 	for i := range eg.entity {
-		eg.entity[i].MoveFunc(vx, vy, speed)
+		eg.entity[i].Move(vx, vy, speed)
 	}
 	return eg.VirtualPosition
 }

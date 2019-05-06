@@ -5,7 +5,7 @@ import (
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	engoCommon "github.com/EngoEngine/engo/common"
 	"github.com/atoyr/goshooting/system"
 	"golang.org/x/image/font/gofont/gosmallcaps"
 )
@@ -25,7 +25,7 @@ func (*myScene) Preload() {
 	engo.Files.Load("textures/number_16_16.png")
 	engo.Files.Load("textures/number_16_32.png")
 	engo.Files.LoadReaderData("go.ttf", bytes.NewReader(gosmallcaps.TTF))
-	//common.SetBackground(color.Black)
+	//engoCommon.SetBackground(color.Black)
 }
 
 func (*myScene) Setup(u engo.Updater) {
@@ -37,10 +37,10 @@ func (*myScene) Setup(u engo.Updater) {
 	engo.Input.RegisterButton("LowSpeed", engo.KeyLeftShift)
 	engo.Input.RegisterButton("Shot", engo.KeyZ)
 	world, _ := u.(*ecs.World)
-	fps := common.FPSSystem{Display: false, Terminal: true}
+	fps := engoCommon.FPSSystem{Display: false, Terminal: true}
 
-	world.AddSystem(&common.RenderSystem{})
-	world.AddSystem(&common.AnimationSystem{})
+	world.AddSystem(&engoCommon.RenderSystem{})
+	world.AddSystem(&engoCommon.AnimationSystem{})
 	world.AddSystem(&system.GameSystem{})
 	world.AddSystem(&system.HUDSystem{})
 	world.AddSystem(&system.OutsideGameAreaSystem{})

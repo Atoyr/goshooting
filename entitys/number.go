@@ -38,11 +38,11 @@ func NewNumberBuilder(size common.NumberSize, scale engo.Point, sc *engoCommon.S
 		basicEntity:            ecs.NewBasic(),
 		renderComponent:        n[0],
 		spaceComponent:         sc,
-		virtualPosition:        engo.Point{X: 0, Y: 0},
+		virtualPosition:        &engo.Point{X: 0, Y: 0},
 		collisionDetectionSize: 0,
-		mergin:                 engo.Point{X: 0, Y: 0},
+		mergin:                 &engo.Point{X: 0, Y: 0},
 	}
-	em.MoveFunc = em.EntityMove
+	em.Move = em.EntityMove
 	return &NumberBuilder{
 		Entity:  em,
 		numbers: n,
@@ -59,7 +59,7 @@ func (n *Number) AddedRenderSystem(rs *engoCommon.RenderSystem) {
 }
 
 func (e *NumberBuilder) SetVirtualPosition(xy engo.Point) *NumberBuilder {
-	e.virtualPosition = xy
+	e.virtualPosition = &xy
 	return e
 }
 
