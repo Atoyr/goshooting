@@ -162,7 +162,7 @@ func (e *Entity) GetBasicEntity() ecs.BasicEntity {
 }
 
 func (e *Entity) GetPoint() engo.Point {
-	return e.spaceComponent.Position
+	return e.spaceComponent.Center()
 }
 func (e *Entity) GetVirtualPosition() engo.Point {
 	return *e.virtualPosition
@@ -171,14 +171,14 @@ func (e *Entity) GetVirtualPosition() engo.Point {
 func (e *Entity) SetVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	e.virtualPosition = &engo.Point{X: point.X, Y: point.Y}
-	e.spaceComponent.Position = s.ConvertRenderPosition(*point.Subtract(*e.mergin))
+	e.spaceComponent.SetCenter(s.ConvertRenderPosition(point))
 }
 
 func (e *Entity) AddVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	e.virtualPosition.Add(point)
 	p := engo.Point{X: e.virtualPosition.X, Y: e.virtualPosition.Y}
-	e.spaceComponent.Position = s.ConvertRenderPosition(*p.Subtract(*e.mergin))
+	e.spaceComponent.SetCenter(s.ConvertRenderPosition(p))
 }
 
 func (e *Entity) GetMergin() engo.Point {
