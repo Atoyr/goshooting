@@ -1,6 +1,7 @@
 package entitys
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/EngoEngine/ecs"
@@ -14,14 +15,12 @@ type EntityBuilder struct {
 	*Entity
 }
 
-func NewEntityBuilder(rc *engoCommon.RenderComponent, sc *engoCommon.SpaceComponent) EntityBuilder {
+func NewEntityBuilder(rc *engoCommon.RenderComponent) EntityBuilder {
 	e := Entity{
 		basicEntity:     ecs.NewBasic(),
 		renderComponent: rc,
-		spaceComponent:  sc,
 
 		virtualPosition:                 &engo.Point{X: 0, Y: 0},
-		entitySize:                      &engo.Point{X: rc.Drawable.Width() * rc.Scale.X, Y: rc.Drawable.Height() * rc.Scale.Y},
 		collisionDetectionRelativePoint: &engo.Point{X: 0, Y: 0},
 		collisionDetectionSize:          0,
 		mergin:                          &engo.Point{X: rc.Drawable.Width() * rc.Scale.X / 2, Y: rc.Drawable.Height() * rc.Scale.Y / 2},
@@ -30,6 +29,14 @@ func NewEntityBuilder(rc *engoCommon.RenderComponent, sc *engoCommon.SpaceCompon
 		speedRate:                       0,
 		angleRate:                       0,
 	}
+
+	e.spaceComponent = &engoCommon.SpaceComponent{
+		Width:    rc.Drawable.Width() * rc.Scale.X,
+		Height:   rc.Drawable.Height() * rc.Scale.Y,
+		Rotation: 0,
+	}
+	e.SetVirtualPosition(e.GetVirtualPosition())
+
 	e.Move = e.EntityMove
 	e.Attack = func(playervx, playervy, speed, angle float32) {}
 	e.AddedRenderSystem = e.addedRenderSystem
@@ -65,6 +72,16 @@ func (eb *EntityBuilder) BuildAngleRate(a float32) *EntityBuilder {
 
 func (eb *EntityBuilder) BuildZIndex(index float32) *EntityBuilder {
 	eb.SetZIndex(index)
+	return eb
+}
+
+func (eb *EntityBuilder) BuildEntitySize(width, height float32) *EntityBuilder {
+	eb.SetEntitySize(width, height)
+	return eb
+}
+
+func (eb *EntityBuilder) BuildRotate(r float32) *EntityBuilder {
+	eb.SetRotation(r)
 	return eb
 }
 
@@ -202,6 +219,19 @@ func (e *Entity) SetAngleRate(a float32) {
 
 func (e *Entity) SetZIndex(index float32) {
 	e.renderComponent.SetZIndex(index)
+}
+
+func (e *Entity) SetRotation(r float32) {
+	center := e.spaceComponent.Center()
+	fmt.Println(e.spaceComponent.Center())
+	e.spaceComponent.Rotation = r
+	fmt.Println(e.spaceComponent.Center())
+	e.spaceComponent.SetCenter(center)
+}
+
+func (e *Entity) SetEntitySize(width, height float32) {
+	e.spaceComponent.Width = width
+	e.spaceComponent.Height = height
 }
 
 func (e *Entity) EntityMove(vx, vy, speed float32) {

@@ -47,11 +47,6 @@ func (gs *GameSystem) New(w *ecs.World) {
 			Drawable: playerTexture,
 			Scale:    engo.Point{X: 0.5, Y: 0.5},
 		},
-		&engoCommon.SpaceComponent{
-			Position: engo.Point{X: 0, Y: 0},
-			Width:    8,
-			Height:   8,
-		},
 	)
 
 	player := playerBuilder.BuildVirtualPosition(engo.Point{X: 0, Y: 0}).BuildSpeed(8).Build()
@@ -67,13 +62,10 @@ func (gs *GameSystem) New(w *ecs.World) {
 			Drawable: enemyTexture,
 			Scale:    engo.Point{X: 0.2, Y: 0.2},
 		},
-		&engoCommon.SpaceComponent{
-			Width:  8,
-			Height: 8,
-		},
 	)
 	enemyBuilder.BuildZIndex(20)
 	e := enemyBuilder.BuildVirtualPosition(engo.Point{X: 300, Y: 200}).Build()
+	e.SetRotation(70)
 
 	// Regist Entity
 	gs.playerEntity = &player
@@ -125,11 +117,6 @@ func (gs *GameSystem) Update(dt float32) {
 			&engoCommon.RenderComponent{
 				Drawable: bulletTexture,
 				Scale:    engo.Point{X: 0.5, Y: 0.5},
-			},
-			&engoCommon.SpaceComponent{
-				Position: gs.playerEntity.GetPoint(),
-				Width:    32,
-				Height:   32,
 			})
 
 		bb.BuildVirtualPosition(gs.playerEntity.GetVirtualPosition()).BuildSpeed(16)
@@ -164,10 +151,6 @@ func (gs *GameSystem) Update(dt float32) {
 					&engoCommon.RenderComponent{
 						Drawable: bulletTexture,
 						Scale:    engo.Point{X: 1.0, Y: 1.0},
-					},
-					&engoCommon.SpaceComponent{
-						Width:  32,
-						Height: 32,
 					})
 				bb.BuildVirtualPosition(e.GetVirtualPosition()).BuildSpeed(4).BuildAngle(float32(gs.framecount%72*5) + float32(90*i) + float32(gs.enemyBulletCount))
 				// Angle(
