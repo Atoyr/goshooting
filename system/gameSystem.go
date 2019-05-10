@@ -51,6 +51,9 @@ func (gs *GameSystem) New(w *ecs.World) {
 
 	player := playerBuilder.BuildVirtualPosition(engo.Point{X: 0, Y: 0}).BuildSpeed(8).Build()
 	player.Move = player.EntityMoveForPlayer
+	player.SetCollisionDetectionSize(8)
+	player.SetZIndex(10)
+	player.RenderCollisionDetection(true)
 
 	playerBullets := map[uint64]*entitys.Entity{}
 	enemys := map[uint64]*entitys.Entity{}
@@ -66,6 +69,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	enemyBuilder.BuildZIndex(20)
 	e := enemyBuilder.BuildVirtualPosition(engo.Point{X: 300, Y: 200}).Build()
 	e.SetRotation(70)
+	e.SetCollisionDetectionSize(25)
 
 	// Regist Entity
 	gs.playerEntity = &player
@@ -104,6 +108,15 @@ func (gs *GameSystem) Update(dt float32) {
 
 	// Player Update
 	gs.playerEntity.Move(gs.playerEntity.GetPlayerMoveInfo(isleft, isright, isup, isdown, islowspeed))
+
+	// Collision
+	if gs.framecount%60 == 0 {
+		for _, e := range gs.enemyEntitys {
+			if gs.playerEntity.IsCollision(e) {
+				fmt.Println("Collision!!")
+			}
+		}
+	}
 
 	// PlayerBullet Update
 	for _, pb := range gs.playerBulletEntitys {

@@ -2,6 +2,7 @@ package entitys
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 
 	"github.com/EngoEngine/ecs"
@@ -28,6 +29,8 @@ func NewEntityBuilder(rc *engoCommon.RenderComponent) EntityBuilder {
 		angle:                           0,
 		speedRate:                       0,
 		angleRate:                       0,
+
+		isRenderCollisionDetection: false,
 	}
 
 	e.spaceComponent = &engoCommon.SpaceComponent{
@@ -93,6 +96,7 @@ func (eb *EntityBuilder) Build() Entity {
 // EntityInterface is entity func interface
 type EntityInterface interface {
 	Move(vx, vy, speed float32) engo.Point
+	Update(frame int64)
 	AddedRenderSystem(rs *engoCommon.RenderSystem)
 	RemovedRenderSystem(rs *engoCommon.RenderSystem)
 
@@ -135,6 +139,11 @@ type Entity struct {
 	speedRate                       float32
 	angleRate                       float32
 
+	isRenderCollisionDetection bool
+	collisionBasicEntity       ecs.BasicEntity
+	collisionRenderComponent   *engoCommon.RenderComponent
+	collisionSpaceComponent    *engoCommon.SpaceComponent
+
 	Move                EntityMoveFunc
 	Attack              EntityAttackFunc
 	AddedRenderSystem   EntityAddedFunc
@@ -144,6 +153,12 @@ type Entity struct {
 // AddedRenderSystem is added entitymodel at rendersystem
 func (e *Entity) addedRenderSystem(rs *engoCommon.RenderSystem) {
 	rs.Add(&e.basicEntity, e.renderComponent, e.spaceComponent)
+	if e.isRenderCollisionDetection {
+		fmt.Println("ADD IT")
+		e.collisionBasicEntity = ecs.NewBasic()
+		e.collisionRenderComponent.SetZIndex(1000)
+		rs.Add(&e.collisionBasicEntity, e.collisionRenderComponent, e.collisionSpaceComponent)
+	}
 }
 
 func (e *Entity) removedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
@@ -172,6 +187,13 @@ func (e *Entity) SetVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	e.virtualPosition = &engo.Point{X: point.X, Y: point.Y}
 	e.spaceComponent.SetCenter(s.ConvertRenderPosition(point))
+	if e.isRenderCollisionDetection {
+		cpoint := engo.Point{X: 0, Y: 0}
+		cpoint.Add(*e.virtualPosition)
+		cpoint.Add(*e.collisionDetectionRelativePoint)
+		e.collisionSpaceComponent.SetCenter(s.ConvertRenderPosition(cpoint))
+
+	}
 }
 
 func (e *Entity) AddVirtualPosition(point engo.Point) {
@@ -179,6 +201,13 @@ func (e *Entity) AddVirtualPosition(point engo.Point) {
 	e.virtualPosition.Add(point)
 	p := engo.Point{X: e.virtualPosition.X, Y: e.virtualPosition.Y}
 	e.spaceComponent.SetCenter(s.ConvertRenderPosition(p))
+	if e.isRenderCollisionDetection {
+		cpoint := engo.Point{X: 0, Y: 0}
+		cpoint.Add(*e.virtualPosition)
+		cpoint.Add(*e.collisionDetectionRelativePoint)
+		e.collisionSpaceComponent.SetCenter(s.ConvertRenderPosition(cpoint))
+
+	}
 }
 
 func (e *Entity) GetMergin() engo.Point {
@@ -217,6 +246,14 @@ func (e *Entity) SetAngleRate(a float32) {
 	e.angleRate = a
 }
 
+func (e *Entity) SetCollisionDetectionRelativePoint(p engo.Point) {
+	e.collisionDetectionRelativePoint = &engo.Point{X: p.X, Y: p.Y}
+}
+
+func (e *Entity) SetCollisionDetectionSize(s float32) {
+	e.collisionDetectionSize = s
+}
+
 func (e *Entity) SetZIndex(index float32) {
 	e.renderComponent.SetZIndex(index)
 }
@@ -232,6 +269,40 @@ func (e *Entity) SetRotation(r float32) {
 func (e *Entity) SetEntitySize(width, height float32) {
 	e.spaceComponent.Width = width
 	e.spaceComponent.Height = height
+}
+
+func (e *Entity) IsCollision(target *Entity) bool {
+	point := engo.Point{X: e.GetVirtualPosition().X, Y: e.GetVirtualPosition().Y}
+	point.Add(*e.collisionDetectionRelativePoint)
+	targetPoint := engo.Point{X: target.GetVirtualPosition().X, Y: target.GetVirtualPosition().Y}
+	targetPoint.Add(*target.collisionDetectionRelativePoint)
+	collisionDetectionSize := e.collisionDetectionSize + target.collisionDetectionSize
+	size2 := (point.X-targetPoint.X)*(point.X-targetPoint.X) + (point.Y-targetPoint.Y)*(point.Y-targetPoint.Y)
+	return size2 <= collisionDetectionSize*collisionDetectionSize
+}
+
+func (e *Entity) RenderCollisionDetection(b bool) {
+	s := common.NewSetting()
+	e.isRenderCollisionDetection = b
+	if b {
+		bgcolor := color.RGBA{200, 200, 200, 255}
+		borderColor := color.RGBA{0, 0, 0, 255}
+		rect := engoCommon.Circle{BorderWidth: 1, BorderColor: borderColor}
+		e.collisionRenderComponent = &engoCommon.RenderComponent{
+			Drawable: rect,
+		}
+		e.collisionRenderComponent.SetZIndex(999)
+		e.collisionRenderComponent.Color = bgcolor
+		sc := engoCommon.SpaceComponent{}
+		point := engo.Point{X: 0, Y: 0}
+		point.Add(*e.virtualPosition)
+		point.Add(*e.collisionDetectionRelativePoint)
+		sc.SetCenter(s.ConvertRenderPosition(point))
+		sc.Width = e.collisionDetectionSize
+		sc.Height = e.collisionDetectionSize
+		e.collisionSpaceComponent = &sc
+		e.AddedRenderSystem = e.addedRenderSystem
+	}
 }
 
 func (e *Entity) EntityMove(vx, vy, speed float32) {
