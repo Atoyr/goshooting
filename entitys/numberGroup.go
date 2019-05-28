@@ -20,19 +20,19 @@ type NumberGroup struct {
 	*NumberGroupBuilder
 }
 
-func NewNumberGroupBuilder(digit int, size acommon.NumberSize, scale engo.Point, sc *common.SpaceComponent, margin float32) (*NumberGroupBuilder, error) {
+func NewNumberGroupBuilder(digit int, size acommon.NumberSize, scale float32, sc *common.SpaceComponent, margin float32) (*NumberGroupBuilder, error) {
 	dc := make([]*Number, digit, digit)
 	p := sc.Position
 	for i := 1; i <= digit; i++ {
-		s := common.SpaceComponent{
-			Position: p,
-		}
-		nb, err := NewNumberBuilder(size, scale, &s)
+		nb, err := NewNumberBuilder(size)
+		nb.SetVirtualPosition(p)
 		if err != nil {
 			return nil, err
 		}
-		dc[digit-i] = nb.Build()
-		p.Add(engo.Point{X: (acommon.GetNumberSize(size).X + margin) * scale.X, Y: 0})
+		nb.SetScale(scale)
+		n := nb.Build()
+		dc[digit-i] = &n
+		p.Add(engo.Point{X: (acommon.GetNumberSize(size).X + margin) * scale, Y: 0})
 	}
 	return &NumberGroupBuilder{digitComponent: dc, value: -1}, nil
 }

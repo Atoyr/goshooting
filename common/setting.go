@@ -58,11 +58,17 @@ func (s *Setting) GetCanvas() engo.Point {
 	return s.canvas
 }
 
-func (s *Setting) ConvertRenderPosition(xy engo.Point) engo.Point {
+func (s *Setting) Scale() engo.Point {
 	ret := engo.Point{X: 0, Y: 0}
-	aabb := s.AABB()
-	ret = *ret.Add(*aabb.Min.MultiplyScalar(s.renderScale))
-	ret = *ret.Add(*xy.MultiplyScalar(s.renderScale))
+	ret.AddScalar(s.renderScale)
+	return ret
+}
+
+func (s *Setting) ConvertVirtualPositionToPhysicsPosition(xy engo.Point) engo.Point {
+	ret := s.canvas
+	ret.Multiply(s.renderPositionRate)
+	ret.Add(xy)
+	ret.MultiplyScalar(s.renderScale)
 
 	return ret
 }

@@ -79,14 +79,14 @@ func GetNumberTexture(value int, numSize NumberSize) (*engoCommon.Texture, error
 	return NewTextureContainer()[string(numSize)+string(value)], nil
 }
 
-func GetNumberTextures(numSize NumberSize) ([]*engoCommon.Texture, error) {
-	textures := make([]*engoCommon.Texture, 10, 10)
+func GetNumberTextures(numSize NumberSize) ([]engoCommon.Texture, error) {
+	textures := make([]engoCommon.Texture, 10, 10)
 	for i := 0; i < 10; i++ {
 		t, err := GetNumberTexture(i, numSize)
 		if err != nil {
 			return nil, err
 		}
-		textures[i] = t
+		textures[i] = *t
 	}
 	return textures, nil
 }

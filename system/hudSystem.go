@@ -63,13 +63,12 @@ func (hud *HUDSystem) New(w *ecs.World) {
 	//hud.number.SetNumber(0)
 
 	space3 := &common.SpaceComponent{
-		Position: engo.Point{X: 450, Y: 150},
-		Width:    150,
-		Height:   150,
+		Position: engo.Point{X: 10, Y: 100},
 	}
-	ngb, _ := entitys.NewNumberGroupBuilder(3, acommon.Number_16_32, engo.Point{X: 3, Y: 3}, space3, 1)
+	ngb, _ := entitys.NewNumberGroupBuilder(3, acommon.Number_16_32, 3, space3, 1)
 	ng := ngb.Build()
-	ng.Value(0)
+
+	// ng.Value(0)
 	hud.numberGroup = &ng
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
