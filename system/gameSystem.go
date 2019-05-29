@@ -27,10 +27,6 @@ type GameSystem struct {
 
 // New is Startup Entity
 func (gs *GameSystem) New(w *ecs.World) {
-	// debug message
-	fmt.Printf("Canvas Width:%f Height:%f Scale:%f \n", engo.CanvasWidth(), engo.CanvasHeight(), engo.CanvasScale())
-	fmt.Printf("Window Width:%f Height:%f  \n", engo.WindowWidth(), engo.WindowHeight())
-
 	gs.world = w
 	gs.framecount = 0
 	gs.playerBulletStartCount = 0
