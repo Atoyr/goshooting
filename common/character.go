@@ -9,8 +9,10 @@ import (
 
 type CharacterSize string
 
+// Character_16_16 is character graphic 16"16
 const Character_16_16 CharacterSize = "Character_16_16"
 
+// character_16_16Spritsheet is character graphic 16"16 sprit sheet
 var character_16_16_Spritsheet *engoCommon.Spritesheet
 
 func InitializeCharacter(characterSize CharacterSize, url string) {
@@ -115,8 +117,6 @@ func getCharacterIndex(char string) int {
 		ret = 18
 	case "s9":
 		ret = 19
-	case " ":
-		ret = 20
 	case "A":
 		ret = 26
 	case "B":
@@ -221,6 +221,60 @@ func getCharacterIndex(char string) int {
 		ret = 76
 	case "z":
 		ret = 77
+	case ".":
+		ret = 78
+	case ",":
+		ret = 79
+	case "-":
+		ret = 80
+	case "+":
+		ret = 81
+	case "//":
+		ret = 82
+	case "**":
+		ret = 83
+	case "=":
+		ret = 84
+	case "/":
+		ret = 85
+	case "^2":
+		ret = 86
+	case "^3":
+		ret = 87
+	case "'":
+		ret = 88
+	case "r\"":
+		ret = 89
+	case "l\"":
+		ret = 90
+	case "!":
+		ret = 91
+	case "?":
+		ret = 92
+	case ":":
+		ret = 93
+	case "^":
+		ret = 94
+	case "&":
+		ret = 95
+	case "(":
+		ret = 96
+	case ")":
+		ret = 97
+	case "[":
+		ret = 98
+	case "]":
+		ret = 99
+	case "_":
+		ret = 100
+	case "#":
+		ret = 101
+	case "po":
+		ret = 102
+	case "bl":
+		ret = 103
+	case " ":
+		ret = 104
 	}
 	return ret
 }

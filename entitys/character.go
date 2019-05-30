@@ -146,13 +146,13 @@ func (nb *CharacterBuilder) Build() Character {
 	return n
 }
 
-func (n *Character) SetCharacter(value string) {
+func (n *Character) SetCharacter(value string) error {
 	n.value = value
 	t, err := common.GetCharacterTexture(value, n.characterSize)
 	if err != nil {
-		// TODO: return error
-		return
+		return err
 	}
 	n.SetDrawable(t)
 	n.renderComponent.Hidden = false
+	return nil
 }

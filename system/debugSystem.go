@@ -6,6 +6,7 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
+	"github.com/atoyr/goshooting/common"
 	"github.com/atoyr/goshooting/entitys"
 )
 
@@ -21,12 +22,18 @@ func (ds *DebugSystem) New(w *ecs.World) {
 
 	ds.world = w
 
-	c := entitys.NewCharacterBuilder(common
+	common.InitializeCharacter(common.Character_16_16, "textures/char_16_16.png")
+
+	cb, _ := entitys.NewCharacterBuilder(common.Character_16_16)
+	cb.SetCharacter("A")
+	cb.SetVirtualPosition(engo.Point{X: 0, Y: 0})
+	c := cb.Build()
 
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
 		case *engoCommon.RenderSystem:
 			ds.renderSystem = sys
+			c.AddedRenderSystem(sys)
 		}
 	}
 }

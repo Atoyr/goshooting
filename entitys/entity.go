@@ -21,11 +21,13 @@ type EntityModeler interface {
 	SetEntitySize(width, height float32)
 	SetZIndex(index float32)
 	SetVirtualPosition(point engo.Point)
+	SetHidden(b bool)
 	AddVirtualPosition(point engo.Point)
 	VertualPosition() engo.Point
 	IsCollision(target Entity) bool
 	RenderCollisionDetection(b bool)
 	Mergin() engo.Point
+	Hidden() bool
 
 	AddedRenderSystem(rs *engoCommon.RenderSystem)
 	RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64
@@ -110,10 +112,6 @@ func (e *Entity) SetZIndex(index float32) {
 	e.renderComponent.SetZIndex(index)
 }
 
-func (e *Entity) Hidden(b bool) {
-	e.renderComponent.Hidden = b
-}
-
 // RenderCollisionDetection
 func (e *Entity) RenderCollisionDetection(b bool) {
 
@@ -136,6 +134,11 @@ func (e *Entity) SetVirtualPosition(point engo.Point) {
 	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(*e.virtualPosition))
 }
 
+// SetHidden is Entity hiddened
+func (e *Entity) SetHidden(b bool) {
+	e.renderComponent.Hidden = b
+}
+
 func (e *Entity) AddVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	e.virtualPosition.Add(point)
@@ -156,6 +159,10 @@ func (e *Entity) VirtualPosition() engo.Point {
 
 func (e *Entity) Mergin() engo.Point {
 	return engo.Point{X: e.renderComponent.Drawable.Width() * e.renderComponent.Scale.X, Y: e.renderComponent.Drawable.Height() * e.renderComponent.Scale.Y}
+}
+
+func (e *Entity) Hidden() bool {
+	return e.renderComponent.Hidden
 }
 
 func (e *Entity) IsCollision(target Entity) bool {

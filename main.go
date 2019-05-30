@@ -24,6 +24,7 @@ func (*myScene) Preload() {
 	engo.Files.Load("textures/number_8_48.png")
 	engo.Files.Load("textures/number_16_16.png")
 	engo.Files.Load("textures/number_16_32.png")
+	engo.Files.Load("textures/char_16_16.png")
 	engo.Files.LoadReaderData("go.ttf", bytes.NewReader(gosmallcaps.TTF))
 	//engoCommon.SetBackground(color.Black)
 }
@@ -44,6 +45,7 @@ func (*myScene) Setup(u engo.Updater) {
 	world.AddSystem(&system.GameSystem{})
 	world.AddSystem(&system.HUDSystem{})
 	world.AddSystem(&system.OutsideGameAreaSystem{})
+	world.AddSystem(&system.DebugSystem{})
 	world.AddSystem(&fps)
 }
 
