@@ -78,7 +78,7 @@ func (eb *EnemyBuilder) SetAngleRate(anglerate float32) {
 }
 
 func (eb *EnemyBuilder) Build() Entity {
-	e := *eb.Entity
+	e := eb.Entity.Clone()
 	e.basicEntity = ecs.NewBasic()
 
 	moveFunc := func(entity *Entity, vx, vy float32) {
@@ -94,5 +94,5 @@ func (eb *EnemyBuilder) Build() Entity {
 		entity.SetVirtualPosition(engo.Point{X: x, Y: y})
 	}
 	e.Move = moveFunc
-	return e
+	return *e
 }

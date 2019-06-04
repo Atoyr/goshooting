@@ -200,6 +200,17 @@ func (e *Entity) Update(frame float32) {
 
 }
 
+func (e *Entity) Clone() *Entity {
+	entityModel := *e.EntityModel
+	entityMove := *e.EntityMove
+	entityAttack := *e.EntityAttack
+	entity := new(Entity)
+	entity.EntityModel = &entityModel
+	entity.EntityMove = &entityMove
+	entity.EntityAttack = &entityAttack
+	return entity
+}
+
 func (e *Entity) String() string {
 	return fmt.Sprintf("%#v %#v", e.EntityModel, e.EntityMove)
 }

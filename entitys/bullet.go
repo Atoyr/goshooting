@@ -77,7 +77,7 @@ func (bb *BulletBuilder) SetAngleRate(anglerate float32) {
 }
 
 func (bb *BulletBuilder) Build() Entity {
-	e := *bb.Entity
+	e := bb.Entity.Clone()
 	e.basicEntity = ecs.NewBasic()
 
 	moveInfoFunc := func(entity *Entity, frame float32) (vx, vy float32) {
@@ -105,5 +105,5 @@ func (bb *BulletBuilder) Build() Entity {
 	e.MoveInfo = moveInfoFunc
 	e.Move = moveFunc
 
-	return e
+	return *e
 }

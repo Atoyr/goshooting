@@ -125,12 +125,12 @@ func (gs *GameSystem) New(w *ecs.World) {
 		if int(e.AttackFrame)%5 == 0 {
 			bulletTexture := common.GetTexture("textures/bullet2.png")
 
+			bb := entitys.NewBulletBuilder()
+			bb.SetDrawable(bulletTexture)
+			bb.SetVirtualPosition(e.VirtualPosition())
+			bb.SetSpeed(4)
+			bb.SetZIndex(10)
 			for i := 0; i < 4; i++ {
-				bb := entitys.NewBulletBuilder()
-				bb.SetDrawable(bulletTexture)
-				bb.SetVirtualPosition(e.VirtualPosition())
-				bb.SetSpeed(4)
-				bb.SetZIndex(10)
 				b := bb.Build()
 				b.Angle = float32(90*i) + e.AttackFrame
 				b.AddedRenderSystem(gs.renderSystem)

@@ -77,7 +77,7 @@ func (pb *PlayerBuilder) SetAngleRate(anglerate float32) {
 }
 
 func (pb *PlayerBuilder) Build() Entity {
-	e := *pb.Entity
+	e := pb.Entity.Clone()
 	e.basicEntity = ecs.NewBasic()
 
 	moveInfoFunc := func(e *Entity, frame float32) (vx, vy float32) {
@@ -122,5 +122,5 @@ func (pb *PlayerBuilder) Build() Entity {
 	e.MoveInfo = moveInfoFunc
 	e.Move = moveFunc
 
-	return e
+	return *e
 }
