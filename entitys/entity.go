@@ -40,27 +40,37 @@ type EntityModel struct {
 	virtualPosition *engo.Point // center of entity
 	scale           float32
 
+	CreateFrame float32
+
 	CollisionDetectionRelativePoint *engo.Point // Collision Detection Position from relative virtualPosition
 	CollisionDetectionSize          float32     // Collision Detection Size circle
 }
 
 type EntityMove struct {
 	Move      EntityMoveFunc
+	MoveInfo  EntityMoveInfoFunc
 	Speed     float32
 	Angle     float32
 	SpeedRate float32
 	AngleRate float32
 }
 
+type EntityAttack struct {
+	Attack           EntityAttackFunc
+	AttackStartFrame float32
+	AttackFrame      float32
+}
+
 type EntityAttacker interface {
-	Attack(vx, vy, speed, angle float32)
+	Attack(entity *Entity, frame float32)
 }
 
 // EntityMoveFunc is called entity.Move()
 type EntityMoveFunc func(entity *Entity, vx, vy float32)
+type EntityMoveInfoFunc func(entity *Entity, frame float32) (vx, vy float32)
 
 // EntityAttackFunc is called entity.Attack()
-type EntityAttackFunc func(playervx, playervy, speed, angle float32)
+type EntityAttackFunc func(entity *Entity, frame float32)
 
 type EntityAddedFunc func(rs *engoCommon.RenderSystem)
 type EntityRemovedFunc func(rs *engoCommon.RenderSystem) uint64
@@ -69,6 +79,7 @@ type EntityRemovedFunc func(rs *engoCommon.RenderSystem) uint64
 type Entity struct {
 	*EntityModel
 	*EntityMove
+	*EntityAttack
 }
 
 // GetID is return BasicEntity.ID()
@@ -172,6 +183,21 @@ func (e *Entity) IsCollision(target Entity) bool {
 	targetpoint.Add(*target.CollisionDetectionRelativePoint)
 	collisionDetectionSize := e.CollisionDetectionSize + target.CollisionDetectionSize
 	return point.PointDistanceSquared(targetpoint) <= collisionDetectionSize*collisionDetectionSize
+}
+
+func (e *Entity) Update(frame float32) {
+	var vx, vy float32
+	if e.Move != nil {
+		if e.MoveInfo != nil {
+			vx, vy = e.MoveInfo(e, frame)
+		}
+		e.Move(e, vx, vy)
+	}
+
+	if e.Attack != nil {
+		e.Attack(e, frame)
+	}
+
 }
 
 func (e *Entity) String() string {

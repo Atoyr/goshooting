@@ -1,7 +1,6 @@
 package entitys
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/EngoEngine/ecs"
@@ -27,7 +26,8 @@ func NewEnemyBuilder() EnemyBuilder {
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
 	move := EntityMove{}
-	e := Entity{EntityModel: &model, EntityMove: &move}
+	attack := EntityAttack{}
+	e := Entity{EntityModel: &model, EntityMove: &move, EntityAttack: &attack}
 	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
 
 	return EnemyBuilder{&e}
@@ -82,6 +82,9 @@ func (eb *EnemyBuilder) Build() Entity {
 	e.basicEntity = ecs.NewBasic()
 
 	moveFunc := func(entity *Entity, vx, vy float32) {
+		if vx == 0 && vy == 0 {
+			return
+		}
 		x := entity.virtualPosition.X
 		y := entity.virtualPosition.Y
 
@@ -91,7 +94,5 @@ func (eb *EnemyBuilder) Build() Entity {
 		entity.SetVirtualPosition(engo.Point{X: x, Y: y})
 	}
 	e.Move = moveFunc
-
-	fmt.Println(e)
 	return e
 }

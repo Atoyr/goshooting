@@ -26,7 +26,8 @@ func NewPlayerBuilder() PlayerBuilder {
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
 	move := EntityMove{}
-	e := Entity{EntityModel: &model, EntityMove: &move}
+	attack := EntityAttack{}
+	e := Entity{EntityModel: &model, EntityMove: &move, EntityAttack: &attack}
 	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
 	return PlayerBuilder{&e}
 }
@@ -79,6 +80,10 @@ func (pb *PlayerBuilder) Build() Entity {
 	e := *pb.Entity
 	e.basicEntity = ecs.NewBasic()
 
+	moveInfoFunc := func(e *Entity, frame float32) (vx, vy float32) {
+		return float32(0), float32(0)
+	}
+
 	moveFunc := func(entity *Entity, vx, vy float32) {
 		if vx == 0 && vy == 0 {
 			return
@@ -113,6 +118,8 @@ func (pb *PlayerBuilder) Build() Entity {
 
 		entity.SetVirtualPosition(engo.Point{X: x, Y: y})
 	}
+
+	e.MoveInfo = moveInfoFunc
 	e.Move = moveFunc
 
 	return e

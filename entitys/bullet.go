@@ -26,7 +26,8 @@ func NewBulletBuilder() BulletBuilder {
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
 	move := EntityMove{}
-	e := Entity{EntityModel: &model, EntityMove: &move}
+	attack := EntityAttack{}
+	e := Entity{EntityModel: &model, EntityMove: &move, EntityAttack: &attack}
 	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
 	return BulletBuilder{&e}
 }
@@ -79,12 +80,14 @@ func (bb *BulletBuilder) Build() Entity {
 	e := *bb.Entity
 	e.basicEntity = ecs.NewBasic()
 
-	moveFunc := func(entity *Entity, vx, vy float32) {
+	moveInfoFunc := func(entity *Entity, frame float32) (vx, vy float32) {
 		rad := float64((entity.Angle - 90) / float32(180) * math.Pi)
 		vx = float32(math.Cos(rad))
 		vy = float32(math.Sin(rad))
-		entity.Angle += entity.AngleRate
-		entity.SpeedRate += entity.SpeedRate
+		return vx, vy
+	}
+
+	moveFunc := func(entity *Entity, vx, vy float32) {
 		//
 		if vx == 0 && vy == 0 {
 			return
@@ -96,7 +99,10 @@ func (bb *BulletBuilder) Build() Entity {
 		x += speed * vx
 		y += speed * vy
 		entity.SetVirtualPosition(engo.Point{X: x, Y: y})
+		entity.Angle += entity.AngleRate
+		entity.SpeedRate += entity.SpeedRate
 	}
+	e.MoveInfo = moveInfoFunc
 	e.Move = moveFunc
 
 	return e
