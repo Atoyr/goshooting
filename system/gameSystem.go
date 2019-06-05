@@ -52,35 +52,6 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.SetZIndex(10)
 	player := playerBuilder.Build()
 	player.RenderCollisionDetection(true)
-	player.MoveInfo = func(e *entitys.Entity, frame float32) (vx, vy float32) {
-		// get inputs
-		isleft := engo.Input.Button("MoveLeft").Down()
-		isright := engo.Input.Button("MoveRight").Down()
-		isup := engo.Input.Button("MoveUp").Down()
-		isdown := engo.Input.Button("MoveDown").Down()
-		islowspeed := engo.Input.Button("LowSpeed").Down()
-
-		// setSpeed
-		if islowspeed {
-			gs.playerEntity.Speed = 4
-		} else {
-			gs.playerEntity.Speed = 8
-		}
-
-		vx = 0
-		vy = 0
-		if isleft && !isright {
-			vx = -1
-		} else if !isleft && isright {
-			vx = 1
-		}
-		if isup && !isdown {
-			vy = -1
-		} else if !isup && isdown {
-			vy = 1
-		}
-		return vx, vy
-	}
 
 	player.Attack = func(e *entitys.Entity, frame float32) {
 		isshot := engo.Input.Button("Shot").Down()
@@ -126,12 +97,12 @@ func (gs *GameSystem) New(w *ecs.World) {
 			bulletTexture := common.GetTexture("textures/bullet2.png")
 
 			bb := entitys.NewBulletBuilder()
-			bb.SetDrawable(bulletTexture)
 			bb.SetVirtualPosition(e.VirtualPosition())
 			bb.SetSpeed(4)
 			bb.SetZIndex(10)
 			for i := 0; i < 4; i++ {
 				b := bb.Build()
+				b.SetDrawable(bulletTexture)
 				b.Angle = float32(90*i) + e.AttackFrame
 				b.AddedRenderSystem(gs.renderSystem)
 				gs.enemyBulletEntitys[b.ID()] = &b
@@ -158,8 +129,36 @@ func (gs *GameSystem) Update(dt float32) {
 	if gs.framecount == math.MaxInt64 {
 		gs.framecount = 0
 	}
+	// get inputs
+	isleft := engo.Input.Button("MoveLeft").Down()
+	isright := engo.Input.Button("MoveRight").Down()
+	isup := engo.Input.Button("MoveUp").Down()
+	isdown := engo.Input.Button("MoveDown").Down()
+	islowspeed := engo.Input.Button("LowSpeed").Down()
 
-	gs.playerEntity.Update(dt)
+	speed := float32(0)
+
+	// setSpeed
+	if islowspeed {
+		speed = 4
+	} else {
+		speed = 8
+	}
+
+	vx := float32(0)
+	vy := float32(0)
+	if isleft && !isright {
+		vx = -1
+	} else if !isleft && isright {
+		vx = 1
+	}
+	if isup && !isdown {
+		vy = -1
+	} else if !isup && isdown {
+		vy = 1
+	}
+
+	gs.playerEntity.Move(vx, vy, speed)
 
 	// Collision
 	// if gs.framecount%60 == 0 {

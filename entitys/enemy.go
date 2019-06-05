@@ -1,8 +1,6 @@
 package entitys
 
 import (
-	"math"
-
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
@@ -18,9 +16,9 @@ func NewEnemyBuilder() EnemyBuilder {
 	sc := engoCommon.SpaceComponent{Position: engo.Point{X: 0, Y: 0}}
 	rc := engoCommon.RenderComponent{Scale: s.Scale()}
 	model := EntityModel{
-		spaceComponent:  &sc,
-		renderComponent: &rc,
-		virtualPosition: &engo.Point{X: 0, Y: 0},
+		spaceComponent:  sc,
+		renderComponent: rc,
+		virtualPosition: engo.Point{X: 0, Y: 0},
 		scale:           0.5,
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
@@ -57,10 +55,6 @@ func (eb *EnemyBuilder) SetCollisionDetectionSize(size float32) {
 	eb.Entity.CollisionDetectionSize = size
 }
 
-func (eb *EnemyBuilder) SetMoveFunc(movefunc EntityMoveFunc) {
-	eb.Entity.Move = movefunc
-}
-
 func (eb *EnemyBuilder) SetSpeed(speed float32) {
 	eb.Entity.Speed = speed
 }
@@ -80,19 +74,5 @@ func (eb *EnemyBuilder) SetAngleRate(anglerate float32) {
 func (eb *EnemyBuilder) Build() Entity {
 	e := eb.Entity.Clone()
 	e.basicEntity = ecs.NewBasic()
-
-	moveFunc := func(entity *Entity, vx, vy float32) {
-		if vx == 0 && vy == 0 {
-			return
-		}
-		x := entity.virtualPosition.X
-		y := entity.virtualPosition.Y
-
-		speed := float32(entity.Speed) / float32(math.Sqrt(float64(vx*vx+vy*vy)))
-		x += speed * vx
-		y += speed * vy
-		entity.SetVirtualPosition(engo.Point{X: x, Y: y})
-	}
-	e.Move = moveFunc
 	return *e
 }

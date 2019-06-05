@@ -1,8 +1,6 @@
 package entitys
 
 import (
-	"math"
-
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
@@ -18,9 +16,9 @@ func NewBulletBuilder() BulletBuilder {
 	sc := engoCommon.SpaceComponent{Position: engo.Point{X: 0, Y: 0}}
 	rc := engoCommon.RenderComponent{Scale: s.Scale()}
 	model := EntityModel{
-		spaceComponent:  &sc,
-		renderComponent: &rc,
-		virtualPosition: &engo.Point{X: 0, Y: 0},
+		spaceComponent:  sc,
+		renderComponent: rc,
+		virtualPosition: engo.Point{X: 0, Y: 0},
 		scale:           0.5,
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
@@ -56,10 +54,6 @@ func (bb *BulletBuilder) SetCollisionDetectionSize(size float32) {
 	bb.Entity.CollisionDetectionSize = size
 }
 
-func (bb *BulletBuilder) SetMoveFunc(movefunc EntityMoveFunc) {
-	bb.Entity.Move = movefunc
-}
-
 func (bb *BulletBuilder) SetSpeed(speed float32) {
 	bb.Entity.Speed = speed
 }
@@ -79,31 +73,6 @@ func (bb *BulletBuilder) SetAngleRate(anglerate float32) {
 func (bb *BulletBuilder) Build() Entity {
 	e := bb.Entity.Clone()
 	e.basicEntity = ecs.NewBasic()
-
-	moveInfoFunc := func(entity *Entity, frame float32) (vx, vy float32) {
-		rad := float64((entity.Angle - 90) / float32(180) * math.Pi)
-		vx = float32(math.Cos(rad))
-		vy = float32(math.Sin(rad))
-		return vx, vy
-	}
-
-	moveFunc := func(entity *Entity, vx, vy float32) {
-		//
-		if vx == 0 && vy == 0 {
-			return
-		}
-		x := entity.virtualPosition.X
-		y := entity.virtualPosition.Y
-
-		speed := float32(entity.Speed) / float32(math.Sqrt(float64(vx*vx+vy*vy)))
-		x += speed * vx
-		y += speed * vy
-		entity.SetVirtualPosition(engo.Point{X: x, Y: y})
-		entity.Angle += entity.AngleRate
-		entity.SpeedRate += entity.SpeedRate
-	}
-	e.MoveInfo = moveInfoFunc
-	e.Move = moveFunc
 
 	return *e
 }

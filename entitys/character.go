@@ -36,8 +36,8 @@ func (n *Character) SetZIndex(index float32) {
 
 func (n *Character) SetVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
-	n.virtualPosition = &engo.Point{X: point.X, Y: point.Y}
-	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(*n.virtualPosition))
+	n.virtualPosition = engo.Point{X: point.X, Y: point.Y}
+	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(n.virtualPosition))
 }
 
 func (n *Character) AddVirtualPosition(point engo.Point) {
@@ -48,15 +48,11 @@ func (n *Character) AddVirtualPosition(point engo.Point) {
 }
 
 func (n *Character) VirtualPosition() engo.Point {
-	return *n.virtualPosition
+	return n.virtualPosition
 }
 
 func (n *Character) IsCollision(target Entity) bool {
 	return n.IsCollision(target)
-}
-
-func (n *Character) SetMoveFunc(movefunc EntityMoveFunc) {
-	n.Move = movefunc
 }
 
 func (n *Character) SetSpeed(speed float32) {
@@ -76,7 +72,7 @@ func (n *Character) SetAngleRate(anglerate float32) {
 }
 
 func (n *Character) AddedRenderSystem(rs *engoCommon.RenderSystem) {
-	rs.Add(&n.basicEntity, n.renderComponent, n.spaceComponent)
+	rs.Add(&n.basicEntity, &n.renderComponent, &n.spaceComponent)
 }
 
 func (n *Character) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
@@ -88,7 +84,7 @@ func (n *Character) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
 func NewCharacterBuilder(size common.CharacterSize) (*CharacterBuilder, error) {
 	sc := engoCommon.SpaceComponent{Position: engo.Point{X: 0, Y: 0}}
 	r := engoCommon.RenderComponent{Hidden: true}
-	em := EntityModel{spaceComponent: &sc, renderComponent: &r}
+	em := EntityModel{spaceComponent: sc, renderComponent: r}
 	emover := EntityMove{}
 	e := Entity{EntityModel: &em, EntityMove: &emover}
 	c := Character{
@@ -117,10 +113,6 @@ func (nb *CharacterBuilder) SetCollisionDetectionRelatevePoint(point engo.Point)
 }
 
 func (nb *CharacterBuilder) SetCollisionDetectionSize(size float32) {
-}
-
-func (nb *CharacterBuilder) SetMoveFunc(movefunc EntityMoveFunc) {
-	nb.Entity.Move = movefunc
 }
 
 func (nb *CharacterBuilder) SetSpeed(speed float32) {

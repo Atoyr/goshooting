@@ -36,8 +36,8 @@ func (n *Number) SetZIndex(index float32) {
 
 func (n *Number) SetVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
-	n.virtualPosition = &engo.Point{X: point.X, Y: point.Y}
-	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(*n.virtualPosition))
+	n.virtualPosition = engo.Point{X: point.X, Y: point.Y}
+	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(n.virtualPosition))
 }
 
 func (n *Number) AddVirtualPosition(point engo.Point) {
@@ -48,15 +48,11 @@ func (n *Number) AddVirtualPosition(point engo.Point) {
 }
 
 func (n *Number) VirtualPosition() engo.Point {
-	return *n.virtualPosition
+	return n.virtualPosition
 }
 
 func (n *Number) IsCollision(target Entity) bool {
 	return n.IsCollision(target)
-}
-
-func (n *Number) SetMoveFunc(movefunc EntityMoveFunc) {
-	n.Move = movefunc
 }
 
 func (n *Number) SetSpeed(speed float32) {
@@ -76,7 +72,7 @@ func (n *Number) SetAngleRate(anglerate float32) {
 }
 
 func (n *Number) AddedRenderSystem(rs *engoCommon.RenderSystem) {
-	rs.Add(&n.basicEntity, n.renderComponent, n.spaceComponent)
+	rs.Add(&n.basicEntity, &n.renderComponent, &n.spaceComponent)
 }
 
 func (n *Number) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
@@ -93,7 +89,7 @@ func NewNumberBuilder(size common.NumberSize) (*NumberBuilder, error) {
 
 	sc := engoCommon.SpaceComponent{Position: engo.Point{X: 0, Y: 0}}
 	r := engoCommon.RenderComponent{Drawable: t[0], Hidden: true}
-	em := EntityModel{spaceComponent: &sc, renderComponent: &r}
+	em := EntityModel{spaceComponent: sc, renderComponent: r}
 	emover := EntityMove{}
 	e := Entity{EntityModel: &em, EntityMove: &emover}
 	n := Number{
@@ -122,10 +118,6 @@ func (nb *NumberBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
 }
 
 func (nb *NumberBuilder) SetCollisionDetectionSize(size float32) {
-}
-
-func (nb *NumberBuilder) SetMoveFunc(movefunc EntityMoveFunc) {
-	nb.Entity.Move = movefunc
 }
 
 func (nb *NumberBuilder) SetSpeed(speed float32) {
