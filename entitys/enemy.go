@@ -8,7 +8,7 @@ import (
 )
 
 type EnemyBuilder struct {
-	Entity *Entity
+	*Entity
 }
 
 func NewEnemyBuilder() EnemyBuilder {
@@ -23,52 +23,37 @@ func NewEnemyBuilder() EnemyBuilder {
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
-	move := EntityMove{}
-	attack := EntityAttack{}
-	e := Entity{EntityModel: &model, EntityMove: &move, EntityAttack: &attack}
+	move := new(EntityMove)
+	attack := new(EntityAttack)
+	collision := new(EntityCollision)
+	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
 	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
 
 	return EnemyBuilder{&e}
 }
 
-func (eb *EnemyBuilder) SetDrawable(drawable engoCommon.Drawable) {
-	eb.Entity.SetDrawable(drawable)
-}
-
-func (eb *EnemyBuilder) SetEntitySize(width, height float32) {
-	eb.Entity.SetEntitySize(width, height)
-}
-
-func (eb *EnemyBuilder) SetZIndex(index float32) {
-	eb.Entity.SetZIndex(index)
-}
-
-func (eb *EnemyBuilder) SetVirtualPosition(point engo.Point) {
-	eb.Entity.SetVirtualPosition(point)
-}
-
 func (eb *EnemyBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
-	eb.Entity.CollisionDetectionRelativePoint.Set(point.X, point.Y)
+	eb.collisionDetectionRelativePoint.Set(point.X, point.Y)
 }
 
 func (eb *EnemyBuilder) SetCollisionDetectionSize(size float32) {
-	eb.Entity.CollisionDetectionSize = size
+	eb.collisionDetectionSize = size
 }
 
 func (eb *EnemyBuilder) SetSpeed(speed float32) {
-	eb.Entity.Speed = speed
+	eb.Speed = speed
 }
 
 func (eb *EnemyBuilder) SetAngle(angle float32) {
-	eb.Entity.Angle = angle
+	eb.Angle = angle
 }
 
 func (eb *EnemyBuilder) SetSpeedRate(speedrate float32) {
-	eb.Entity.SpeedRate = speedrate
+	eb.SpeedRate = speedrate
 }
 
 func (eb *EnemyBuilder) SetAngleRate(anglerate float32) {
-	eb.Entity.AngleRate = anglerate
+	eb.AngleRate = anglerate
 }
 
 func (eb *EnemyBuilder) Build() Entity {

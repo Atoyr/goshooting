@@ -50,8 +50,11 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.SetSpeed(8)
 	playerBuilder.SetCollisionDetectionSize(8)
 	playerBuilder.SetZIndex(10)
+	playerBuilder.DenyOverArea = true
+	playerBuilder.RenderCollisionDetection(true)
+	playerBuilder.SetCollisionBasicEntity(ecs.NewBasic())
+
 	player := playerBuilder.Build()
-	player.RenderCollisionDetection(true)
 
 	player.Attack = func(e *entitys.Entity, frame float32) {
 		isshot := engo.Input.Button("Shot").Down()
@@ -87,10 +90,11 @@ func (gs *GameSystem) New(w *ecs.World) {
 	// enemy
 	enemyBuilder := entitys.NewEnemyBuilder()
 	enemyBuilder.SetDrawable(enemyTexture)
-	enemyBuilder.SetZIndex(20)
-	enemyBuilder.SetVirtualPosition(engo.Point{X: 0, Y: 0})
+	enemyBuilder.SetVirtualPosition(engo.Point{X: 0, Y: -100})
 	enemyBuilder.SetAngle(70)
-	enemyBuilder.SetCollisionDetectionSize(25)
+	enemyBuilder.SetCollisionDetectionSize(16)
+	enemyBuilder.RenderCollisionDetection(true)
+	enemyBuilder.SetCollisionBasicEntity(ecs.NewBasic())
 	enemy := enemyBuilder.Build()
 	enemy.Attack = func(e *entitys.Entity, frame float32) {
 		if int(e.AttackFrame)%5 == 0 {
@@ -120,7 +124,9 @@ func (gs *GameSystem) New(w *ecs.World) {
 	gs.enemyBulletCount = 0
 
 	player.AddedRenderSystem(gs.renderSystem)
+	player.AddedRenderSystemToCollisionComponent(gs.renderSystem)
 	enemy.AddedRenderSystem(gs.renderSystem)
+	enemy.AddedRenderSystemToCollisionComponent(gs.renderSystem)
 }
 
 // Update is Frame Update
@@ -161,13 +167,13 @@ func (gs *GameSystem) Update(dt float32) {
 	gs.playerEntity.Move(vx, vy, speed)
 
 	// Collision
-	// if gs.framecount%60 == 0 {
-	// 	for _, e := range gs.enemyEntitys {
-	// 		if gs.playerEntity.IsCollision(e) {
-	// 			fmt.Println("Collision!!")
-	// 		}
-	// 	}
-	// }
+	if gs.framecount%60 == 0 {
+		for _, e := range gs.enemyEntitys {
+			if gs.playerEntity.IsCollision(e) {
+				fmt.Println("Collision!!")
+			}
+		}
+	}
 
 	// PlayerBullet Update
 	for _, pb := range gs.playerBulletEntitys {
@@ -177,16 +183,12 @@ func (gs *GameSystem) Update(dt float32) {
 	// EnemyBullet Upate
 	for _, eb := range gs.enemyBulletEntitys {
 		eb.Update(dt)
-		//	s := common.NewSetting()
-		//	virtualPosition := eb.VirtualPosition()
-		//	mergin := eb.Mergin()
-		//	if (virtualPosition.X < -1*mergin.X || s.GetGameAreaSize().X+mergin.X < virtualPosition.X) || (virtualPosition.Y < -1*mergin.Y || s.GetGameAreaSize().Y+mergin.Y < virtualPosition.Y) {
-		//		gs.Remove(eb.BasicEntity())
-		//	}
+		if eb.IsOverGameArea() {
+			gs.Remove(eb.BasicEntity())
+		}
 	}
 
-	for i := range gs.enemyEntitys {
-		e := gs.enemyEntitys[i]
+	for _, e := range gs.enemyEntitys {
 		e.Update(dt)
 	}
 

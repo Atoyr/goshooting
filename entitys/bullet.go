@@ -8,7 +8,7 @@ import (
 )
 
 type BulletBuilder struct {
-	Entity *Entity
+	*Entity
 }
 
 func NewBulletBuilder() BulletBuilder {
@@ -23,35 +23,20 @@ func NewBulletBuilder() BulletBuilder {
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
-	move := EntityMove{}
-	attack := EntityAttack{}
-	e := Entity{EntityModel: &model, EntityMove: &move, EntityAttack: &attack}
+	move := new(EntityMove)
+	attack := new(EntityAttack)
+	collision := new(EntityCollision)
+	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
 	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
 	return BulletBuilder{&e}
 }
 
-func (bb *BulletBuilder) SetDrawable(drawable engoCommon.Drawable) {
-	bb.Entity.SetDrawable(drawable)
-}
-
-func (bb *BulletBuilder) SetEntitySize(width, height float32) {
-	bb.Entity.SetEntitySize(width, height)
-}
-
-func (bb *BulletBuilder) SetZIndex(index float32) {
-	bb.Entity.SetZIndex(index)
-}
-
-func (bb *BulletBuilder) SetVirtualPosition(point engo.Point) {
-	bb.Entity.SetVirtualPosition(point)
-}
-
 func (bb *BulletBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
-	bb.Entity.CollisionDetectionRelativePoint.Set(point.X, point.Y)
+	bb.Entity.collisionDetectionRelativePoint.Set(point.X, point.Y)
 }
 
 func (bb *BulletBuilder) SetCollisionDetectionSize(size float32) {
-	bb.Entity.CollisionDetectionSize = size
+	bb.Entity.collisionDetectionSize = size
 }
 
 func (bb *BulletBuilder) SetSpeed(speed float32) {

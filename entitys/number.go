@@ -91,7 +91,9 @@ func NewNumberBuilder(size common.NumberSize) (*NumberBuilder, error) {
 	r := engoCommon.RenderComponent{Drawable: t[0], Hidden: true}
 	em := EntityModel{spaceComponent: sc, renderComponent: r}
 	emover := EntityMove{}
-	e := Entity{EntityModel: &em, EntityMove: &emover}
+	attack := new(EntityAttack)
+	collison := new(EntityCollision)
+	e := Entity{EntityModel: &em, EntityMove: &emover, EntityAttack: attack, EntityCollision: collison}
 	n := Number{
 		Entity:  &e,
 		value:   -1,

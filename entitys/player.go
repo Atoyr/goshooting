@@ -8,7 +8,7 @@ import (
 )
 
 type PlayerBuilder struct {
-	Entity *Entity
+	*Entity
 }
 
 func NewPlayerBuilder() PlayerBuilder {
@@ -23,35 +23,20 @@ func NewPlayerBuilder() PlayerBuilder {
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
-	move := EntityMove{}
-	attack := EntityAttack{}
-	e := Entity{EntityModel: &model, EntityMove: &move, EntityAttack: &attack}
+	move := new(EntityMove)
+	attack := new(EntityAttack)
+	collision := new(EntityCollision)
+	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
 	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
 	return PlayerBuilder{&e}
 }
 
-func (pb *PlayerBuilder) SetDrawable(drawable engoCommon.Drawable) {
-	pb.Entity.SetDrawable(drawable)
-}
-
-func (pb *PlayerBuilder) SetEntitySize(width, height float32) {
-	pb.Entity.SetEntitySize(width, height)
-}
-
-func (pb *PlayerBuilder) SetZIndex(index float32) {
-	pb.Entity.SetZIndex(index)
-}
-
-func (pb *PlayerBuilder) SetVirtualPosition(point engo.Point) {
-	pb.Entity.SetVirtualPosition(point)
-}
-
 func (pb *PlayerBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
-	pb.Entity.CollisionDetectionRelativePoint.Set(point.X, point.Y)
+	pb.collisionDetectionRelativePoint.Set(point.X, point.Y)
 }
 
 func (pb *PlayerBuilder) SetCollisionDetectionSize(size float32) {
-	pb.Entity.CollisionDetectionSize = size
+	pb.collisionDetectionSize = size
 }
 
 func (pb *PlayerBuilder) SetSpeed(speed float32) {

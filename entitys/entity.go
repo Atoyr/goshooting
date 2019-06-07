@@ -2,6 +2,7 @@ package entitys
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 
 	"github.com/EngoEngine/ecs"
@@ -11,30 +12,35 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type EntityBuilder interface {
+// Builder is Entity Build Interface
+type Builder interface {
 	Build() Entity
 }
 
-type EntityModeler interface {
-	ID() uint64
-	BasicEntity() ecs.BasicEntity
-	Point() engo.Point
-	SetDrawable(drawable engoCommon.Drawable)
-	SetEntitySize(width, height float32)
-	SetZIndex(index float32)
-	SetVirtualPosition(point engo.Point)
-	SetHidden(b bool)
-	AddVirtualPosition(point engo.Point)
-	VertualPosition() engo.Point
-	IsCollision(target Entity) bool
-	RenderCollisionDetection(b bool)
-	Mergin() engo.Point
-	Hidden() bool
-
+// Modeler is EntityModel Interface
+type Modeler interface {
 	AddedRenderSystem(rs *engoCommon.RenderSystem)
 	RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64
 }
 
+// Mover is Entity Move Interface
+type Mover interface {
+	Move(vx, vy, speed float32)
+	MoveInfo(frame float32) (vx, vy float32)
+}
+
+// Attacker is Entity Attacking interface
+type Attacker interface {
+	Attack(entity *Entity, frame float32)
+}
+
+type Collisionner interface {
+	IsCollision(target Entity) bool
+	AddedRenderSystemToCollisionComponent(rs *engoCommon.RenderSystem)
+	RemovedRenderSystemToCollisionComponent(rs *engoCommon.RenderSystem) uint64
+}
+
+// EntityModel is Entity Base
 type EntityModel struct {
 	basicEntity     ecs.BasicEntity
 	renderComponent engoCommon.RenderComponent
@@ -42,44 +48,48 @@ type EntityModel struct {
 	virtualPosition engo.Point // center of entity
 	scale           float32
 
-	CreateFrame float32
-
-	CollisionDetectionRelativePoint *engo.Point // Collision Detection Position from relative virtualPosition
-	CollisionDetectionSize          float32     // Collision Detection Size circle
+	isOverGameArea bool
+	CreateFrame    float32
 }
 
+// EntityMove is Moving on entity
 type EntityMove struct {
-	AllowOverArea bool
-	Speed         float32
-	Angle         float32
-	SpeedRate     float32
-	AngleRate     float32
+	DenyOverArea bool
+	Speed        float32
+	Angle        float32
+	SpeedRate    float32
+	AngleRate    float32
 }
 
+// EntityAttack is Attacking entity
 type EntityAttack struct {
 	Attack           EntityAttackFunc
 	AttackStartFrame float32
 	AttackFrame      float32
 }
 
-type EntityAttacker interface {
-	Attack(entity *Entity, frame float32)
+// EntityCollision is Judge Collision on Entity
+type EntityCollision struct {
+	isRenderCollision               bool
+	collisionBasicEntity            ecs.BasicEntity
+	collisionRenderComponent        engoCommon.RenderComponent
+	collisionSpaceComponent         engoCommon.SpaceComponent
+	collisionDetectionRelativePoint engo.Point // Collision Detection Position from relative virtualPosition
+	collisionDetectionSize          float32    // Collision Detection Size circle
 }
 
 // EntityAttackFunc is called entity.Attack()
 type EntityAttackFunc func(entity *Entity, frame float32)
-
-type EntityAddedFunc func(rs *engoCommon.RenderSystem)
-type EntityRemovedFunc func(rs *engoCommon.RenderSystem) uint64
 
 // Entity is GameAreaEntityObject
 type Entity struct {
 	*EntityModel
 	*EntityMove
 	*EntityAttack
+	*EntityCollision
 }
 
-// GetID is return BasicEntity.ID()
+// ID is return BasicEntity.ID()
 func (e *Entity) ID() uint64 {
 	return e.basicEntity.ID()
 }
@@ -120,9 +130,9 @@ func (e *Entity) SetZIndex(index float32) {
 	e.renderComponent.SetZIndex(index)
 }
 
-// RenderCollisionDetection
-func (e *Entity) RenderCollisionDetection(b bool) {
-
+// SetHidden is Entity hiddened
+func (e *Entity) SetHidden(b bool) {
+	e.renderComponent.Hidden = b
 }
 
 // AddedRenderSystem is added entitymodel at rendersystem
@@ -136,29 +146,24 @@ func (e *Entity) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
 	return i
 }
 
+// SetVirtualPosition is Set virtual Position and update spaceComponentPosition
 func (e *Entity) SetVirtualPosition(point engo.Point) {
-	s := common.NewSetting()
 	e.EntityModel.virtualPosition = engo.Point{X: point.X, Y: point.Y}
-	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(e.virtualPosition))
+	e.updateSpaceComponentCenterPosition()
 }
 
-// SetHidden is Entity hiddened
-func (e *Entity) SetHidden(b bool) {
-	e.renderComponent.Hidden = b
-}
-
+// SetVirtualPosition is Add virtual Position and update spaceComponentPosition
 func (e *Entity) AddVirtualPosition(point engo.Point) {
-	s := common.NewSetting()
 	e.virtualPosition.Add(point)
-	p := engo.Point{X: e.virtualPosition.X, Y: e.virtualPosition.Y}
-	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(p))
-	//	if e.isRenderCollisionDetection {
-	//		cpoint := engo.Point{X: 0, Y: 0}
-	//		cpoint.Add(*e.virtualPosition)
-	//		cpoint.Add(*e.collisionDetectionRelativePoint)
-	//		e.collisionSpaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(cpoint))
-	//
-	//	}
+	e.updateSpaceComponentCenterPosition()
+}
+
+func (e *Entity) updateSpaceComponentCenterPosition() {
+	s := common.NewSetting()
+	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(e.virtualPosition))
+	if e.isRenderCollision {
+		e.updateCollisionSpaceComponentCenterPosition()
+	}
 }
 
 func (e *Entity) VirtualPosition() engo.Point {
@@ -173,14 +178,55 @@ func (e *Entity) Hidden() bool {
 	return e.renderComponent.Hidden
 }
 
-func (e *Entity) IsCollision(target Entity) bool {
+func (e *Entity) SetCollisionDetectionRelativePoint(point engo.Point) {
+	e.collisionDetectionRelativePoint = point
+}
+
+func (e *Entity) updateCollisionSpaceComponentCenterPosition() {
+	s := common.NewSetting()
+	p := new(engo.Point)
+	p.Add(e.virtualPosition)
+	p.Add(e.collisionDetectionRelativePoint)
+	e.collisionSpaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(*p))
+}
+
+func (e *Entity) SetCollisionBasicEntity(basic ecs.BasicEntity) {
+	e.collisionBasicEntity = basic
+}
+
+func (e *Entity) IsCollision(target *Entity) bool {
 	point := engo.Point{X: e.VirtualPosition().X, Y: e.VirtualPosition().Y}
-	point.Add(*e.CollisionDetectionRelativePoint)
+	point.Add(e.collisionDetectionRelativePoint)
 	targetpoint := engo.Point{X: target.VirtualPosition().X, Y: target.VirtualPosition().Y}
-	targetpoint.Add(*target.CollisionDetectionRelativePoint)
-	collisionDetectionSize := e.CollisionDetectionSize + target.CollisionDetectionSize
+	targetpoint.Add(target.collisionDetectionRelativePoint)
+	collisionDetectionSize := e.collisionDetectionSize + target.collisionDetectionSize
+	fmt.Println(point)
+	fmt.Println(e.VirtualPosition())
+	fmt.Println(targetpoint)
+	fmt.Printf("%f %f \n", point.PointDistanceSquared(targetpoint), collisionDetectionSize*collisionDetectionSize)
 	return point.PointDistanceSquared(targetpoint) <= collisionDetectionSize*collisionDetectionSize
 }
+
+func (e *Entity) IsRenderCollision() bool {
+	return e.isRenderCollision
+}
+
+func (e *Entity) AddedRenderSystemToCollisionComponent(rs *engoCommon.RenderSystem) {
+	rs.Add(&e.collisionBasicEntity, &e.collisionRenderComponent, &e.collisionSpaceComponent)
+	e.isRenderCollision = true
+}
+
+func (e *Entity) RemovedRenderSystemToCollisionComponent(rs *engoCommon.RenderSystem) uint64 {
+	i := e.collisionBasicEntity.ID()
+	rs.Remove(e.collisionBasicEntity)
+	e.isRenderCollision = false
+	return i
+}
+
+func (e *Entity) IsOverGameArea() bool {
+	return e.isOverGameArea
+}
+
 func (e *Entity) MoveInfo(frame float32) (vx, vy float32) {
 	rad := float64((e.Angle - 90) / float32(180) * math.Pi)
 	vx = float32(math.Cos(rad))
@@ -192,7 +238,6 @@ func (e *Entity) Move(vx, vy, speed float32) {
 	if vx == 0 && vy == 0 {
 		return
 	}
-	s := common.NewSetting()
 	x := e.virtualPosition.X
 	y := e.virtualPosition.Y
 
@@ -200,16 +245,18 @@ func (e *Entity) Move(vx, vy, speed float32) {
 	x += speed * vx
 	y += speed * vy
 
-	if !e.AllowOverArea {
-		gameArea := s.GetGameAreaSize()
-		min := gameArea
-		min.MultiplyScalar(-0.5)
-		max := gameArea
-		max.MultiplyScalar(0.5)
-		mergin := engo.Point{X: e.renderComponent.Drawable.Width(), Y: e.renderComponent.Drawable.Height()}
-		mergin.Multiply(s.Scale())
-		mergin.MultiplyScalar(e.scale * 0.5)
+	s := common.NewSetting()
+	gameArea := s.GetGameAreaSize()
+	min := gameArea
+	min.MultiplyScalar(-0.5)
+	max := gameArea
+	max.MultiplyScalar(0.5)
+	mergin := engo.Point{X: e.renderComponent.Drawable.Width(), Y: e.renderComponent.Drawable.Height()}
+	mergin.Multiply(s.Scale())
+	mergin.MultiplyScalar(e.scale * 0.5)
 
+	if e.DenyOverArea {
+		e.isOverGameArea = false
 		if minX := min.X + mergin.X; x < minX {
 			x = minX
 		} else if maxX := max.X - mergin.X; x > maxX {
@@ -219,6 +266,18 @@ func (e *Entity) Move(vx, vy, speed float32) {
 			y = minY
 		} else if maxY := max.Y - mergin.Y; y > maxY {
 			y = maxY
+		}
+	} else {
+		if minX := min.X + mergin.X; x < minX {
+			e.isOverGameArea = true
+		} else if maxX := max.X - mergin.X; x > maxX {
+			e.isOverGameArea = true
+		} else if minY := min.Y + mergin.Y; y < minY {
+			e.isOverGameArea = true
+		} else if maxY := max.Y - mergin.Y; y > maxY {
+			e.isOverGameArea = true
+		} else {
+			e.isOverGameArea = false
 		}
 	}
 
@@ -234,21 +293,24 @@ func (e *Entity) Update(frame float32) {
 	if e.Attack != nil {
 		e.Attack(e, frame)
 	}
-
 }
 
+// Clone is Cloned Entity
 func (e *Entity) Clone() *Entity {
 	entityModel := new(EntityModel)
 	entityMove := new(EntityMove)
 	entityAttack := new(EntityAttack)
-	copier.Copy(&entityModel, *e.EntityModel)
-	copier.Copy(&entityMove, *e.EntityMove)
-	copier.Copy(&entityAttack, *e.EntityAttack)
+	entityCollision := new(EntityCollision)
+	copier.Copy(&entityModel, e.EntityModel)
+	copier.Copy(&entityMove, e.EntityMove)
+	copier.Copy(&entityAttack, e.EntityAttack)
+	copier.Copy(&entityCollision, e.EntityCollision)
 
 	entity := new(Entity)
 	entity.EntityModel = entityModel
 	entity.EntityMove = entityMove
 	entity.EntityAttack = entityAttack
+	entity.EntityCollision = entityCollision
 	return entity
 }
 
@@ -256,104 +318,24 @@ func (e *Entity) String() string {
 	return fmt.Sprintf("%#v %#v", e.EntityModel, e.EntityMove)
 }
 
-// func (eb *entityModelBuilder) BuildZIndex(index float32) *entityModelBuilder {
-// 	eb.renderComponent.SetZIndex(index)
-// 	return eb
-// }
-//
-// func (eb *entityModelBuilder) buildEntityModel() EntityModel {
-// 	b := ecs.NewBasic()
-// 	rc := &eb.renderComponent
-// 	sc := &eb.spaceComponent
-// 	e := EntityModel{
-// 		basicEntity:     b,
-// 		renderComponent: *rc,
-// 		spaceComponent:  *sc,
-// 	}
-// 	return e
-// }
-
-// func (e *Entity) RenderCollisionDetection(b bool) {
-// 	s := common.NewSetting()
-// 	e.isRenderCollisionDetection = b
-// 	if b {
-// 		bgcolor := color.RGBA{200, 200, 200, 255}
-// 		borderColor := color.RGBA{0, 0, 0, 255}
-// 		rect := engoCommon.Circle{BorderWidth: 1, BorderColor: borderColor}
-// 		e.collisionRenderComponent = &engoCommon.RenderComponent{
-// 			Drawable: rect,
-// 		}
-// 		e.collisionRenderComponent.SetZIndex(999)
-// 		e.collisionRenderComponent.Color = bgcolor
-// 		sc := engoCommon.SpaceComponent{}
-// 		point := engo.Point{X: 0, Y: 0}
-// 		point.Add(*e.virtualPosition)
-// 		point.Add(*e.collisionDetectionRelativePoint)
-// 		sc.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(point))
-// 		sc.Width = e.collisionDetectionSize
-// 		sc.Height = e.collisionDetectionSize
-// 		e.collisionSpaceComponent = &sc
-// 		e.AddedRenderSystem = e.addedRenderSystem
-// 	}
-// }
-//
-// func (e *Entity) EntityMove(vx, vy, speed float32) {
-// 	p := engo.Point{X: vx * speed, Y: vy * speed}
-// 	e.AddVirtualPosition(p)
-// }
-//
-// func (e *Entity) EntityMoveForPlayer(vx, vy, speed float32) {
-// 	s := common.NewSetting()
-// 	x := e.virtualPosition.X
-// 	y := e.virtualPosition.Y
-//
-// 	if vx != 0 && vy != 0 {
-// 		speed = float32(speed) / 1.414
-// 	}
-// 	x += speed * vx
-// 	y += speed * vy
-// 	max := s.GetGameAreaSize()
-// 	if x < e.mergin.X {
-// 		x = e.mergin.X
-// 	} else if x > max.X-e.mergin.X {
-// 		x = max.X - e.mergin.X
-// 	}
-// 	if y < e.mergin.Y {
-// 		y = e.mergin.Y
-// 	} else if y > max.Y-e.mergin.Y {
-// 		y = max.Y - e.mergin.Y
-// 	}
-// 	e.SetVirtualPosition(engo.Point{X: x, Y: y})
-// }
-//
-// func (e *Entity) GetMoveInfo() (vx, vy, speed float32) {
-// 	rad := float64((e.angle - 90) / float32(180) * math.Pi)
-// 	vx = float32(math.Cos(rad))
-// 	vy = float32(math.Sin(rad))
-// 	speed = e.speed
-// 	e.angle += e.angleRate
-// 	e.speed += e.speedRate
-//
-// 	return vx, vy, speed
-// }
-//
-// func (e *Entity) GetPlayerMoveInfo(isleft, isright, isup, isdown, islowspeed bool) (vx, vy, speed float32) {
-// 	vx = 0
-// 	vy = 0
-// 	if islowspeed {
-// 		speed = float32(e.speed / 2)
-// 	} else {
-// 		speed = float32(e.speed)
-// 	}
-// 	if isleft && !isright {
-// 		vx = -1
-// 	} else if !isleft && isright {
-// 		vx = 1
-// 	}
-// 	if isup && !isdown {
-// 		vy = -1
-// 	} else if !isup && isdown {
-// 		vy = 1
-// 	}
-// 	return vx, vy, speed
-// }
+func (e *Entity) RenderCollisionDetection(b bool) {
+	s := common.NewSetting()
+	if b {
+		bgcolor := color.RGBA{200, 200, 200, 255}
+		borderColor := color.RGBA{0, 0, 0, 255}
+		rect := engoCommon.Circle{BorderWidth: 1, BorderColor: borderColor}
+		e.collisionRenderComponent = engoCommon.RenderComponent{
+			Drawable: rect,
+		}
+		e.collisionRenderComponent.SetZIndex(999)
+		e.collisionRenderComponent.Color = bgcolor
+		sc := engoCommon.SpaceComponent{}
+		point := engo.Point{X: 0, Y: 0}
+		point.Add(e.virtualPosition)
+		point.Add(e.collisionDetectionRelativePoint)
+		sc.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(point))
+		sc.Width = e.collisionDetectionSize * 2
+		sc.Height = e.collisionDetectionSize * 2
+		e.collisionSpaceComponent = sc
+	}
+}

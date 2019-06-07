@@ -86,7 +86,9 @@ func NewCharacterBuilder(size common.CharacterSize) (*CharacterBuilder, error) {
 	r := engoCommon.RenderComponent{Hidden: true}
 	em := EntityModel{spaceComponent: sc, renderComponent: r}
 	emover := EntityMove{}
-	e := Entity{EntityModel: &em, EntityMove: &emover}
+	attack := new(EntityAttack)
+	collison := new(EntityCollision)
+	e := Entity{EntityModel: &em, EntityMove: &emover, EntityAttack: attack, EntityCollision: collison}
 	c := Character{
 		Entity:        &e,
 		value:         "",
