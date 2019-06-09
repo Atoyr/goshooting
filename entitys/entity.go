@@ -21,6 +21,7 @@ type Builder interface {
 type Modeler interface {
 	AddedRenderSystem(rs *engoCommon.RenderSystem)
 	RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64
+	CanDelete() bool
 }
 
 // Mover is Entity Move Interface
@@ -50,6 +51,7 @@ type EntityModel struct {
 
 	isOverGameArea bool
 	CreateFrame    float32
+	hitPoint       int32
 }
 
 // EntityMove is Moving on entity
@@ -135,6 +137,16 @@ func (e *Entity) SetHidden(b bool) {
 	e.renderComponent.Hidden = b
 }
 
+// SetHitPoint Set hitpoint
+func (e *Entity) SetHitPoint(hp int32) {
+	e.hitPoint = hp
+}
+
+// AddHitPoint Add hitpoint
+func (e *Entity) AddHitPoint(hp int32) {
+	e.hitPoint += hp
+}
+
 // AddedRenderSystem is added entitymodel at rendersystem
 func (e *Entity) AddedRenderSystem(rs *engoCommon.RenderSystem) {
 	rs.Add(&e.basicEntity, &e.renderComponent, &e.spaceComponent)
@@ -144,6 +156,10 @@ func (e *Entity) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
 	i := e.basicEntity.ID()
 	rs.Remove(e.basicEntity)
 	return i
+}
+
+func (e *Entity) CanDelete() bool {
+	return (e.isOverGameArea || e.hitPoint < 0)
 }
 
 // SetVirtualPosition is Set virtual Position and update spaceComponentPosition

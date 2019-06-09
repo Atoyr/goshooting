@@ -46,13 +46,14 @@ func (gs *GameSystem) New(w *ecs.World) {
 	// Player
 	playerBuilder := entitys.NewPlayerBuilder()
 	playerBuilder.SetDrawable(playerTexture)
-	playerBuilder.SetVirtualPosition(engo.Point{X: 0, Y: 0})
+	playerBuilder.SetVirtualPosition(engo.Point{X: 0, Y: 100})
 	playerBuilder.SetSpeed(8)
-	playerBuilder.SetCollisionDetectionSize(8)
+	playerBuilder.SetCollisionDetectionSize(4)
 	playerBuilder.SetZIndex(10)
 	playerBuilder.DenyOverArea = true
 	playerBuilder.RenderCollisionDetection(true)
 	playerBuilder.SetCollisionBasicEntity(ecs.NewBasic())
+	playerBuilder.SetHitPoint(1)
 
 	player := playerBuilder.Build()
 
@@ -93,6 +94,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	enemyBuilder.SetVirtualPosition(engo.Point{X: 0, Y: -100})
 	enemyBuilder.SetAngle(70)
 	enemyBuilder.SetCollisionDetectionSize(16)
+	enemyBuilder.SetHitPoint(100)
 	enemyBuilder.RenderCollisionDetection(true)
 	enemyBuilder.SetCollisionBasicEntity(ecs.NewBasic())
 	enemy := enemyBuilder.Build()
@@ -104,6 +106,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 			bb.SetVirtualPosition(e.VirtualPosition())
 			bb.SetSpeed(4)
 			bb.SetZIndex(10)
+			bb.SetHitPoint(1)
 			for i := 0; i < 4; i++ {
 				b := bb.Build()
 				b.SetDrawable(bulletTexture)
