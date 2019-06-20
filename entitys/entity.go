@@ -176,7 +176,7 @@ func (e *Entity) AddVirtualPosition(point engo.Point) {
 
 func (e *Entity) updateSpaceComponentCenterPosition() {
 	s := common.NewSetting()
-	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(e.virtualPosition))
+	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToRenderPosition(e.virtualPosition))
 	if e.isRenderCollision {
 		e.updateCollisionSpaceComponentCenterPosition()
 	}
@@ -203,7 +203,7 @@ func (e *Entity) updateCollisionSpaceComponentCenterPosition() {
 	p := new(engo.Point)
 	p.Add(e.virtualPosition)
 	p.Add(e.collisionDetectionRelativePoint)
-	e.collisionSpaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(*p))
+	e.collisionSpaceComponent.SetCenter(s.ConvertVirtualPositionToRenderPosition(*p))
 }
 
 func (e *Entity) SetCollisionBasicEntity(basic ecs.BasicEntity) {
@@ -262,7 +262,7 @@ func (e *Entity) Move(vx, vy, speed float32) {
 	y += speed * vy
 
 	s := common.NewSetting()
-	gameArea := s.GetGameAreaSize()
+	gameArea := s.GameAreaSize()
 	min := gameArea
 	min.MultiplyScalar(-0.5)
 	max := gameArea
@@ -349,7 +349,7 @@ func (e *Entity) RenderCollisionDetection(b bool) {
 		point := engo.Point{X: 0, Y: 0}
 		point.Add(e.virtualPosition)
 		point.Add(e.collisionDetectionRelativePoint)
-		sc.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(point))
+		sc.SetCenter(s.ConvertVirtualPositionToRenderPosition(point))
 		sc.Width = e.collisionDetectionSize * 2
 		sc.Height = e.collisionDetectionSize * 2
 		e.collisionSpaceComponent = sc

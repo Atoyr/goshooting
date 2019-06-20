@@ -37,14 +37,14 @@ func (n *Character) SetZIndex(index float32) {
 func (n *Character) SetVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	n.virtualPosition = engo.Point{X: point.X, Y: point.Y}
-	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(n.virtualPosition))
+	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToRenderPosition(n.virtualPosition))
 }
 
 func (n *Character) AddVirtualPosition(point engo.Point) {
 	s := common.NewSetting()
 	n.virtualPosition.Add(point)
 	p := engo.Point{X: n.virtualPosition.X, Y: n.virtualPosition.Y}
-	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToPhysicsPosition(p))
+	n.spaceComponent.SetCenter(s.ConvertVirtualPositionToRenderPosition(p))
 }
 
 func (n *Character) VirtualPosition() engo.Point {

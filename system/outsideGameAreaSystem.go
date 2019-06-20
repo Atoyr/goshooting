@@ -32,35 +32,35 @@ func (oga *OutsideGameAreaSystem) New(w *ecs.World) {
 		Drawable: rect,
 		Color:    color,
 	}
-	l.SetZIndex(100)
-	r.SetZIndex(100)
-	t.SetZIndex(100)
-	b.SetZIndex(100)
+	l.SetZIndex(500)
+	r.SetZIndex(500)
+	t.SetZIndex(500)
+	b.SetZIndex(500)
 
 	setting := acommon.NewSetting()
 	leftBasic := ecs.NewBasic()
 	leftSpace := &common.SpaceComponent{
 		Position: engo.Point{X: 0, Y: 0},
 		Width:    setting.AABB().Min.X,
-		Height:   setting.GetCanvas().Y,
+		Height:   setting.RenderCanvas().Y,
 	}
 	rightBasic := ecs.NewBasic()
 	rightSpace := &common.SpaceComponent{
 		Position: engo.Point{X: setting.AABB().Max.X, Y: 0},
-		Width:    setting.GetCanvas().X - setting.AABB().Max.X,
-		Height:   setting.GetCanvas().Y,
+		Width:    setting.RenderCanvas().X - setting.AABB().Max.X,
+		Height:   setting.RenderCanvas().Y,
 	}
 	topBasic := ecs.NewBasic()
 	topSpace := &common.SpaceComponent{
 		Position: engo.Point{X: setting.AABB().Min.X, Y: 0},
-		Width:    setting.GetGameAreaSize().X,
+		Width:    setting.RenderGameAreaSize().X,
 		Height:   setting.AABB().Min.Y,
 	}
 	bottomBasic := ecs.NewBasic()
 	bottomSpace := &common.SpaceComponent{
 		Position: engo.Point{X: setting.AABB().Min.X, Y: setting.AABB().Max.Y},
-		Width:    setting.GetGameAreaSize().X,
-		Height:   setting.GetCanvas().Y - setting.AABB().Max.Y,
+		Width:    setting.RenderGameAreaSize().X,
+		Height:   setting.RenderCanvas().Y - setting.AABB().Max.Y,
 	}
 
 	for _, system := range w.Systems() {

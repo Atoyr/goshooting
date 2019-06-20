@@ -7,11 +7,11 @@ import (
 )
 
 type Setting struct {
-	canvas             engo.Point
+	// Base Setting
 	renderPositionRate engo.Point
-	gameAreaSize       engo.Point
-	renderScale        float32
-	renderCanvas       engo.Point
+	// Convert Render
+	renderScale  float32
+	renderCanvas engo.Point
 }
 
 var (
@@ -19,43 +19,53 @@ var (
 	settingOnce sync.Once
 )
 
+var baseCanvasHeight float32 = float32(423)
+var baseGameAreaSize engo.Point = engo.Point{X: 300, Y: 400}
+
+// NewSetting is create setting at once and return setting
 func NewSetting() *Setting {
 	settingOnce.Do(func() {
-		canvas := engo.Point{X: 1280, Y: 720}
 		renderPositionRate := engo.Point{X: 0.5, Y: 0.5}
-		gameAreaSize := engo.Point{X: 516, Y: 688}
-		renderScale := float32(1)
+		renderScale := float32(0.5)
 		setting = &Setting{
-			canvas:             canvas,
 			renderPositionRate: renderPositionRate,
-			gameAreaSize:       gameAreaSize,
 			renderScale:        renderScale,
 		}
 
-		setting.UpdateCanvas()
+		setting.UpdateRenderParams()
 	})
 	return setting
 }
 
-func (s *Setting) UpdateCanvas() engo.Point {
+// UpdateCanvas is Update render Scale for CanvasWidth
+func (s *Setting) UpdateRenderParams() engo.Point {
 	xy := engo.Point{X: engo.CanvasWidth(), Y: engo.CanvasHeight()}
 	s.renderCanvas = xy
-	s.renderScale = xy.Y / s.canvas.Y
+	s.renderScale = xy.Y / baseCanvasHeight
 	return xy
 }
 
+// AABB is return gameArea min and max position
 func (s *Setting) AABB() engo.AABB {
-	center := engo.Point{X: s.canvas.X * s.renderPositionRate.X, Y: s.canvas.Y * s.renderPositionRate.Y}
-	half := engo.Point{X: s.gameAreaSize.X * 0.5, Y: s.gameAreaSize.Y * 0.5}
-	return engo.AABB{Min: engo.Point{X: center.X - half.X, Y: center.Y - half.Y}, Max: engo.Point{X: center.X + half.X, Y: center.Y + half.Y}}
+	min := engo.Point{X: baseGameAreaSize.X, Y: baseGameAreaSize.Y}
+	max := engo.Point{X: baseGameAreaSize.X, Y: baseGameAreaSize.Y}
+	min.MultiplyScalar(-0.5)
+	max.MultiplyScalar(0.5)
+	return engo.AABB{Min: s.ConvertVirtualPositionToRenderPosition(min), Max: s.ConvertVirtualPositionToRenderPosition(max)}
 }
 
-func (s *Setting) GetGameAreaSize() engo.Point {
-	return s.gameAreaSize
+func (s *Setting) RenderCanvas() engo.Point {
+	return s.renderCanvas
 }
 
-func (s *Setting) GetCanvas() engo.Point {
-	return s.canvas
+func (s *Setting) GameAreaSize() engo.Point {
+	return baseGameAreaSize
+}
+
+func (s *Setting) RenderGameAreaSize() engo.Point {
+	gameArea := engo.Point{X: baseGameAreaSize.X, Y: baseGameAreaSize.Y}
+	gameArea.MultiplyScalar(s.renderScale)
+	return gameArea
 }
 
 func (s *Setting) Scale() engo.Point {
@@ -64,11 +74,13 @@ func (s *Setting) Scale() engo.Point {
 	return ret
 }
 
-func (s *Setting) ConvertVirtualPositionToPhysicsPosition(xy engo.Point) engo.Point {
-	ret := s.canvas
+func (s *Setting) ConvertVirtualPositionToRenderPosition(xy engo.Point) engo.Point {
+	ret := engo.Point{X: 0, Y: 0}
+	pxy := engo.Point{X: xy.X, Y: xy.Y}
+	pxy.MultiplyScalar(s.renderScale)
+	ret.Add(s.renderCanvas)
 	ret.Multiply(s.renderPositionRate)
-	ret.Add(xy)
-	ret.MultiplyScalar(s.renderScale)
+	ret.Add(pxy)
 
 	return ret
 }
