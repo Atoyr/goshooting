@@ -135,6 +135,9 @@ func (e *Entity) SetZIndex(index float32) {
 // SetHidden is Entity hiddened
 func (e *Entity) SetHidden(b bool) {
 	e.renderComponent.Hidden = b
+	if e.isRenderCollision {
+		e.collisionRenderComponent.Hidden = true
+	}
 }
 
 // SetHitPoint Set hitpoint
@@ -145,6 +148,11 @@ func (e *Entity) SetHitPoint(hp int32) {
 // AddHitPoint Add hitpoint
 func (e *Entity) AddHitPoint(hp int32) {
 	e.hitPoint += hp
+}
+
+// AddHitPoint Add hitpoint
+func (e *Entity) HitPoint() int32 {
+	return e.hitPoint
 }
 
 // AddedRenderSystem is added entitymodel at rendersystem
@@ -284,13 +292,13 @@ func (e *Entity) Move(vx, vy, speed float32) {
 			y = maxY
 		}
 	} else {
-		if minX := min.X + mergin.X; x < minX {
+		if minX := min.X - mergin.X; x < minX {
 			e.isOverGameArea = true
-		} else if maxX := max.X - mergin.X; x > maxX {
+		} else if maxX := max.X + mergin.X; x > maxX {
 			e.isOverGameArea = true
-		} else if minY := min.Y + mergin.Y; y < minY {
+		} else if minY := min.Y - mergin.Y; y < minY {
 			e.isOverGameArea = true
-		} else if maxY := max.Y - mergin.Y; y > maxY {
+		} else if maxY := max.Y + mergin.Y; y > maxY {
 			e.isOverGameArea = true
 		} else {
 			e.isOverGameArea = false

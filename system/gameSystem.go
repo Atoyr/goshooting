@@ -58,29 +58,26 @@ func (gs *GameSystem) New(w *ecs.World) {
 	player := playerBuilder.Build()
 
 	player.Attack = func(e *entitys.Entity, frame float32) {
-		isshot := engo.Input.Button("Shot").Down()
-		if isshot {
-			if e.AttackStartFrame < 0 {
-				e.AttackStartFrame = 0
-			} else {
-				e.AttackStartFrame++
-			}
-			if int(e.AttackStartFrame)%5 == 0 {
-				bulletTexture := common.GetTexture("textures/bullet3.png")
-				bb := entitys.NewBulletBuilder()
-				bb.SetDrawable(bulletTexture)
-				bb.SetVirtualPosition(gs.playerEntity.VirtualPosition())
-				bb.SetSpeed(16)
-				bb.SetZIndex(10)
+		if e.AttackStartFrame < 0 {
+			e.AttackStartFrame = 0
+		} else {
+			e.AttackStartFrame++
+		}
+		if int(e.AttackStartFrame)%5 == 0 {
+			bulletTexture := common.GetTexture("textures/bullet3.png")
+			bb := entitys.NewBulletBuilder()
+			bb.SetDrawable(bulletTexture)
+			bb.SetVirtualPosition(gs.playerEntity.VirtualPosition())
+			bb.SetSpeed(16)
+			bb.SetZIndex(10)
+			bb.SetCollisionDetectionSize(16)
+			bb.SetHitPoint(10)
 
-				b := bb.Build()
-				b.AddedRenderSystem(gs.renderSystem)
-				gs.playerBulletEntitys[b.ID()] = &b
-			} else if !isshot {
-				e.AttackStartFrame = -1
-			} else {
-				gs.playerBulletStartCount += 1
-			}
+			b := bb.Build()
+			b.AddedRenderSystem(gs.renderSystem)
+			gs.playerBulletEntitys[b.ID()] = &b
+		} else {
+			gs.playerBulletStartCount += 1
 		}
 	}
 
@@ -139,21 +136,23 @@ func (gs *GameSystem) Update(dt float32) {
 		gs.framecount = 0
 	}
 	// get inputs
+	// Get Input
 	isleft := engo.Input.Button("MoveLeft").Down()
 	isright := engo.Input.Button("MoveRight").Down()
 	isup := engo.Input.Button("MoveUp").Down()
 	isdown := engo.Input.Button("MoveDown").Down()
 	islowspeed := engo.Input.Button("LowSpeed").Down()
-
-	speed := float32(0)
+	isshot := engo.Input.Button("Shot").Down()
 
 	// setSpeed
+	speed := float32(0)
 	if islowspeed {
 		speed = 4
 	} else {
 		speed = 8
 	}
 
+	// Get vx vy
 	vx := float32(0)
 	vy := float32(0)
 	if isleft && !isright {
@@ -167,7 +166,25 @@ func (gs *GameSystem) Update(dt float32) {
 		vy = 1
 	}
 
+	// Move Player
 	gs.playerEntity.Move(vx, vy, speed)
+
+	// Move PlayerBullet and hidden PlayerBullet
+	for _, pb := range gs.playerBulletEntitys {
+		if !pb.IsOverGameArea() {
+			pb.Update(dt)
+		}
+		if pb.IsOverGameArea() && !pb.Hidden() {
+			pb.SetHidden(true)
+		}
+	}
+
+	// Attack for Player
+	if isshot {
+		gs.playerEntity.Attack(gs.playerEntity, dt)
+	} else if !isshot {
+		gs.playerEntity.AttackStartFrame = -1
+	}
 
 	// Collision
 	if gs.framecount%60 == 0 {
@@ -177,22 +194,34 @@ func (gs *GameSystem) Update(dt float32) {
 			}
 		}
 	}
-
-	// PlayerBullet Update
-	for _, pb := range gs.playerBulletEntitys {
-		pb.Update(dt)
+	for _, e := range gs.enemyEntitys {
+		e.Update(dt)
+		for _, pb := range gs.playerBulletEntitys {
+			if !pb.Hidden() {
+				if e.IsCollision(pb) {
+					pbHP := pb.HitPoint()
+					eHp := e.HitPoint()
+					e.AddHitPoint(-1 * pbHP)
+					pb.AddHitPoint(-1 * eHp)
+					if e.HitPoint() < 0 {
+						e.SetHidden(true)
+					}
+					if pb.HitPoint() < 0 {
+						pb.SetHidden(true)
+					}
+				}
+			}
+		}
 	}
 
 	// EnemyBullet Upate
 	for _, eb := range gs.enemyBulletEntitys {
-		eb.Update(dt)
-		if eb.IsOverGameArea() {
-			gs.Remove(eb.BasicEntity())
+		if !eb.IsOverGameArea() {
+			eb.Update(dt)
 		}
-	}
-
-	for _, e := range gs.enemyEntitys {
-		e.Update(dt)
+		if eb.IsOverGameArea() && !eb.Hidden() {
+			eb.SetHidden(true)
+		}
 	}
 
 	if gs.framecount%60 == 0 {
