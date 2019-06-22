@@ -48,10 +48,7 @@ type EntityModel struct {
 	spaceComponent  engoCommon.SpaceComponent
 	virtualPosition engo.Point // center of entity
 	scale           float32
-
-	isOverGameArea bool
-	CreateFrame    float32
-	hitPoint       int32
+	hitPoint        int32
 }
 
 // EntityMove is Moving on entity
@@ -166,10 +163,6 @@ func (e *Entity) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
 	return i
 }
 
-func (e *Entity) CanDelete() bool {
-	return (e.isOverGameArea || e.hitPoint < 0)
-}
-
 // SetVirtualPosition is Set virtual Position and update spaceComponentPosition
 func (e *Entity) SetVirtualPosition(point engo.Point) {
 	e.EntityModel.virtualPosition = engo.Point{X: point.X, Y: point.Y}
@@ -247,10 +240,6 @@ func (e *Entity) RemovedRenderSystemToCollisionComponent(rs *engoCommon.RenderSy
 	return i
 }
 
-func (e *Entity) IsOverGameArea() bool {
-	return e.isOverGameArea
-}
-
 func (e *Entity) MoveInfo(frame float32) (vx, vy float32) {
 	rad := float64((e.Angle - 90) / float32(180) * math.Pi)
 	vx = float32(math.Cos(rad))
@@ -279,30 +268,15 @@ func (e *Entity) Move(vx, vy, speed float32) {
 	mergin.Multiply(s.Scale())
 	mergin.MultiplyScalar(e.scale * 0.5)
 
-	if e.DenyOverArea {
-		e.isOverGameArea = false
-		if minX := min.X + mergin.X; x < minX {
-			x = minX
-		} else if maxX := max.X - mergin.X; x > maxX {
-			x = maxX
-		}
-		if minY := min.Y + mergin.Y; y < minY {
-			y = minY
-		} else if maxY := max.Y - mergin.Y; y > maxY {
-			y = maxY
-		}
-	} else {
-		if minX := min.X - mergin.X; x < minX {
-			e.isOverGameArea = true
-		} else if maxX := max.X + mergin.X; x > maxX {
-			e.isOverGameArea = true
-		} else if minY := min.Y - mergin.Y; y < minY {
-			e.isOverGameArea = true
-		} else if maxY := max.Y + mergin.Y; y > maxY {
-			e.isOverGameArea = true
-		} else {
-			e.isOverGameArea = false
-		}
+	if minX := min.X + mergin.X; x < minX {
+		x = minX
+	} else if maxX := max.X - mergin.X; x > maxX {
+		x = maxX
+	}
+	if minY := min.Y + mergin.Y; y < minY {
+		y = minY
+	} else if maxY := max.Y - mergin.Y; y > maxY {
+		y = maxY
 	}
 
 	e.SetVirtualPosition(engo.Point{X: x, Y: y})
