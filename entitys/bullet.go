@@ -5,10 +5,51 @@ import (
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
 	"github.com/atoyr/goshooting/common"
+	"github.com/jinzhu/copier"
+	"math"
 )
 
+type Bullet struct {
+	*EntityModel
+
+	Speed     float32
+	Angle     float32
+	SpeedRate float32
+	AngleRate float32
+}
+
+func (b *Bullet) SetSpeed(speed float32) {
+	b.Speed = speed
+}
+
+func (b *Bullet) SetAngle(angle float32) {
+	b.Angle = angle
+}
+
+func (b *Bullet) SetSpeedRate(speedrate float32) {
+	b.SpeedRate = speedrate
+}
+
+func (b *Bullet) SetAngleRate(anglerate float32) {
+	b.AngleRate = anglerate
+}
+
+func (b *Bullet) Move(vx, vy, speed float32) {
+	if vx == 0 && vy == 0 {
+		return
+	}
+
+	vector := engo.Point{X: vx, Y: vy}
+	speed = float32(speed) / float32(math.Sqrt(float64(vx*vx+vy*vy)))
+	vector.MultiplyScalar(speed)
+
+	b.AddPosition(vector)
+	b.Angle += b.AngleRate
+	b.Speed += b.SpeedRate
+}
+
 type BulletBuilder struct {
-	*Entity
+	*Bullet
 }
 
 func NewBulletBuilder() BulletBuilder {
@@ -20,44 +61,26 @@ func NewBulletBuilder() BulletBuilder {
 		renderComponent: rc,
 		virtualPosition: engo.Point{X: 0, Y: 0},
 		scale:           0.5,
+		hitPoint:        0,
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
 
-	move := new(EntityMove)
-	attack := new(EntityAttack)
-	collision := new(EntityCollision)
-	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
-	e.SetPosition(engo.Point{X: 0, Y: 0})
-	return BulletBuilder{&e}
+	model.SetPosition(engo.Point{X: 0, Y: 0})
+
+	bullet := new(Bullet)
+
+	bullet.EntityModel = &model
+	bullet.Speed = 0
+	bullet.Angle = 0
+	bullet.SpeedRate = 0
+	bullet.AngleRate = 0
+	return BulletBuilder{bullet}
 }
 
-func (bb *BulletBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
-	bb.Entity.collisionDetectionRelativePoint.Set(point.X, point.Y)
-}
+func (bb *BulletBuilder) Build() Modeler {
+	bullet := new(Bullet)
+	copier.Copy(&bullet, bb.Bullet)
+	bullet.basicEntity = ecs.NewBasic()
 
-func (bb *BulletBuilder) SetCollisionDetectionSize(size float32) {
-	bb.Entity.collisionDetectionSize = size
-}
-
-func (bb *BulletBuilder) SetSpeed(speed float32) {
-	bb.Entity.Speed = speed
-}
-
-func (bb *BulletBuilder) SetAngle(angle float32) {
-	bb.Entity.Angle = angle
-}
-
-func (bb *BulletBuilder) SetSpeedRate(speedrate float32) {
-	bb.Entity.SpeedRate = speedrate
-}
-
-func (bb *BulletBuilder) SetAngleRate(anglerate float32) {
-	bb.Entity.AngleRate = anglerate
-}
-
-func (bb *BulletBuilder) Build() Entity {
-	e := bb.Entity.Clone()
-	e.basicEntity = ecs.NewBasic()
-
-	return *e
+	return *bullet
 }
