@@ -17,15 +17,6 @@ type Builder interface {
 	Build() Entity
 }
 
-// Modeler is EntityModel Interface
-type Modeler interface {
-	AddedRenderSystem(rs *engoCommon.RenderSystem)
-	RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64
-	IsCollision(target Modeler) bool
-	Position() engo.Point
-	Size() float32
-}
-
 // Mover is Entity Move Interface
 type Mover interface {
 	Move(vx, vy, speed float32)
@@ -37,24 +28,12 @@ type Attacker interface {
 	Attack(entity *Entity, frame float32)
 }
 
-// EntityModel is Entity Base
-type EntityModel struct {
-	basicEntity     ecs.BasicEntity
-	renderComponent engoCommon.RenderComponent
-	spaceComponent  engoCommon.SpaceComponent
-	virtualPosition engo.Point // center of entity
-	size            float32
-	scale           float32
-	hitPoint        int32
-}
-
 // EntityMove is Moving on entity
 type EntityMove struct {
-	DenyOverArea bool
-	Speed        float32
-	Angle        float32
-	SpeedRate    float32
-	AngleRate    float32
+	Speed     float32
+	Angle     float32
+	SpeedRate float32
+	AngleRate float32
 }
 
 // EntityAttack is Attacking entity
@@ -83,23 +62,6 @@ type Entity struct {
 	*EntityMove
 	*EntityAttack
 	*EntityCollision
-}
-
-// ID is return BasicEntity.ID()
-func (e *EntityModel) ID() uint64 {
-	return e.basicEntity.ID()
-}
-
-func (e *Entity) BasicEntity() ecs.BasicEntity {
-	return e.basicEntity
-}
-
-func (e *Entity) Point() engo.Point {
-	return e.virtualPosition
-}
-
-func (e *EntityModel) Size() float32 {
-	return e.size
 }
 
 func (e *Entity) SetDrawable(drawable engoCommon.Drawable) {
@@ -153,41 +115,6 @@ func (e *Entity) HitPoint() int32 {
 	return e.hitPoint
 }
 
-// AddedRenderSystem is added entitymodel at rendersystem
-func (e *Entity) AddedRenderSystem(rs *engoCommon.RenderSystem) {
-	rs.Add(&e.basicEntity, &e.renderComponent, &e.spaceComponent)
-}
-
-func (e *Entity) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
-	i := e.basicEntity.ID()
-	rs.Remove(e.basicEntity)
-	return i
-}
-
-// SetPosition is Set virtual Position and update spaceComponentPosition
-func (e *Entity) SetPosition(point engo.Point) {
-	e.EntityModel.virtualPosition = engo.Point{X: point.X, Y: point.Y}
-	e.updateSpaceComponentCenterPosition()
-}
-
-// SetPosition is Add virtual Position and update spaceComponentPosition
-func (e *Entity) AddPosition(point engo.Point) {
-	e.virtualPosition.Add(point)
-	e.updateSpaceComponentCenterPosition()
-}
-
-func (e *Entity) updateSpaceComponentCenterPosition() {
-	s := common.NewSetting()
-	e.spaceComponent.SetCenter(s.ConvertVirtualPositionToRenderPosition(e.virtualPosition))
-	if e.isRenderCollision {
-		e.updateCollisionSpaceComponentCenterPosition()
-	}
-}
-
-func (e *Entity) Position() engo.Point {
-	return e.virtualPosition
-}
-
 func (e *Entity) Mergin() engo.Point {
 	return engo.Point{X: e.renderComponent.Drawable.Width() * e.renderComponent.Scale.X, Y: e.renderComponent.Drawable.Height() * e.renderComponent.Scale.Y}
 }
@@ -210,13 +137,6 @@ func (e *Entity) updateCollisionSpaceComponentCenterPosition() {
 
 func (e *Entity) SetCollisionBasicEntity(basic ecs.BasicEntity) {
 	e.collisionBasicEntity = basic
-}
-
-func (e *Entity) IsCollision(target Modeler) bool {
-	Position := e.Position()
-	targetPosition := target.Position()
-	collisionDetectionSize := e.Size() + target.Size()
-	return Position.PointDistanceSquared(targetPosition) <= collisionDetectionSize*collisionDetectionSize
 }
 
 func (e *Entity) IsRenderCollision() bool {

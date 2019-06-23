@@ -50,7 +50,6 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.SetSpeed(8)
 	playerBuilder.SetCollisionDetectionSize(4)
 	playerBuilder.SetZIndex(10)
-	playerBuilder.DenyOverArea = true
 	playerBuilder.RenderCollisionDetection(true)
 	playerBuilder.SetCollisionBasicEntity(ecs.NewBasic())
 	playerBuilder.SetHitPoint(1)
@@ -189,7 +188,7 @@ func (gs *GameSystem) Update(dt float32) {
 	// Collision
 	if gs.framecount%60 == 0 {
 		for _, e := range gs.enemyEntitys {
-			if gs.playerEntity.IsCollision(e) {
+			if gs.playerEntity.IsCollision(e.EntityModel) {
 				fmt.Println("Collision!!")
 			}
 		}
