@@ -107,10 +107,6 @@ func (nb *CharacterBuilder) SetZIndex(index float32) {
 	nb.Entity.SetZIndex(index)
 }
 
-func (nb *CharacterBuilder) SetVirtualPosition(point engo.Point) {
-	nb.Entity.SetVirtualPosition(point)
-}
-
 func (nb *CharacterBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
 }
 

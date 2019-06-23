@@ -27,7 +27,7 @@ func NewBulletBuilder() BulletBuilder {
 	attack := new(EntityAttack)
 	collision := new(EntityCollision)
 	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
-	e.SetVirtualPosition(engo.Point{X: 0, Y: 0})
+	e.SetPosition(engo.Point{X: 0, Y: 0})
 	return BulletBuilder{&e}
 }
 

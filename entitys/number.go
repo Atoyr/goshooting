@@ -113,7 +113,7 @@ func (nb *NumberBuilder) SetZIndex(index float32) {
 }
 
 func (nb *NumberBuilder) SetVirtualPosition(point engo.Point) {
-	nb.Entity.SetVirtualPosition(point)
+	nb.Entity.SetPosition(point)
 }
 
 func (nb *NumberBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {

@@ -46,7 +46,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	// Player
 	playerBuilder := entitys.NewPlayerBuilder()
 	playerBuilder.SetDrawable(playerTexture)
-	playerBuilder.SetVirtualPosition(engo.Point{X: 0, Y: 100})
+	playerBuilder.SetPosition(engo.Point{X: 0, Y: 100})
 	playerBuilder.SetSpeed(8)
 	playerBuilder.SetCollisionDetectionSize(4)
 	playerBuilder.SetZIndex(10)
@@ -67,7 +67,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 			bulletTexture := common.GetTexture("textures/bullet3.png")
 			bb := entitys.NewBulletBuilder()
 			bb.SetDrawable(bulletTexture)
-			bb.SetVirtualPosition(gs.playerEntity.VirtualPosition())
+			bb.SetPosition(gs.playerEntity.Position())
 			bb.SetSpeed(16)
 			bb.SetZIndex(10)
 			bb.SetCollisionDetectionSize(16)
@@ -88,7 +88,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	// enemy
 	enemyBuilder := entitys.NewEnemyBuilder()
 	enemyBuilder.SetDrawable(enemyTexture)
-	enemyBuilder.SetVirtualPosition(engo.Point{X: 0, Y: -100})
+	enemyBuilder.SetPosition(engo.Point{X: 0, Y: -100})
 	enemyBuilder.SetAngle(70)
 	enemyBuilder.SetCollisionDetectionSize(16)
 	enemyBuilder.SetHitPoint(100)
@@ -100,7 +100,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 			bulletTexture := common.GetTexture("textures/bullet2.png")
 
 			bb := entitys.NewBulletBuilder()
-			bb.SetVirtualPosition(e.VirtualPosition())
+			bb.SetPosition(e.Position())
 			bb.SetSpeed(4)
 			bb.SetZIndex(10)
 			bb.SetHitPoint(1)
@@ -170,14 +170,14 @@ func (gs *GameSystem) Update(dt float32) {
 	gs.playerEntity.Move(vx, vy, speed)
 
 	// Move PlayerBullet and hidden PlayerBullet
-	for _, pb := range gs.playerBulletEntitys {
-		if !pb.IsOverGameArea() {
-			pb.Update(dt)
-		}
-		if pb.IsOverGameArea() && !pb.Hidden() {
-			pb.SetHidden(true)
-		}
-	}
+	//	for _, pb := range gs.playerBulletEntitys {
+	//		//		if !pb.IsOverGameArea() {
+	//		//			pb.Update(dt)
+	//		//		}
+	//		//		if pb.IsOverGameArea() && !pb.Hidden() {
+	//		//			pb.SetHidden(true)
+	//		//		}
+	//	}
 
 	// Attack for Player
 	if isshot {
@@ -215,14 +215,14 @@ func (gs *GameSystem) Update(dt float32) {
 	}
 
 	// EnemyBullet Upate
-	for _, eb := range gs.enemyBulletEntitys {
-		if !eb.IsOverGameArea() {
-			eb.Update(dt)
-		}
-		if eb.IsOverGameArea() && !eb.Hidden() {
-			eb.SetHidden(true)
-		}
-	}
+	//	for _, eb := range gs.enemyBulletEntitys {
+	//		//		if !eb.IsOverGameArea() {
+	//		//			eb.Update(dt)
+	//		//		}
+	//		//		if eb.IsOverGameArea() && !eb.Hidden() {
+	//		//			eb.SetHidden(true)
+	//		//		}
+	//	}
 
 	if gs.framecount%60 == 0 {
 		fmt.Printf("Entity count %d \n", len(gs.enemyBulletEntitys))
