@@ -10,13 +10,26 @@ import (
 // Modeler is EntityModel Interface
 type Modeler interface {
 	ID() uint64
+	AppendChild(child *ecs.BasicEntity)
+
 	AddedRenderSystem(rs *engoCommon.RenderSystem)
 	RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64
+
+	Hidden() bool
+	SetHidden(hidden bool)
+
 	IsCollision(target Modeler) bool
+
 	Position() engo.Point
 	SetPosition(point engo.Point)
 	AddPosition(point engo.Point)
-	Size() float32
+
+	HitPoint() int
+	SetHitPoint(hp int)
+	AddHitPoint(hp int)
+
+	Width() float32
+	Height() float32
 }
 
 // EntityModel is Entity Base
@@ -25,14 +38,17 @@ type EntityModel struct {
 	renderComponent engoCommon.RenderComponent
 	spaceComponent  engoCommon.SpaceComponent
 	virtualPosition engo.Point // center of entity
-	size            float32
 	scale           float32
-	hitPoint        int32
+	hitPoint        int
 }
 
 // ID is return BasicEntity.ID()
 func (em *EntityModel) ID() uint64 {
 	return em.basicEntity.ID()
+}
+
+func (em *EntityModel) AppendChild(child *ecs.BasicEntity) {
+	em.basicEntity.AppendChild(child)
 }
 
 // AddedRenderSystem is added entitymodel at rendersystem
@@ -44,6 +60,14 @@ func (em *EntityModel) RemovedRenderSystem(rs *engoCommon.RenderSystem) uint64 {
 	i := em.basicEntity.ID()
 	rs.Remove(em.basicEntity)
 	return i
+}
+
+func (em *EntityModel) Hidden() bool {
+	return em.renderComponent.Hidden
+}
+
+func (em *EntityModel) SetHidden(hidden bool) {
+	em.renderComponent.Hidden = hidden
 }
 
 func (em *EntityModel) IsCollision(target Modeler) bool {
@@ -69,12 +93,64 @@ func (em *EntityModel) AddPosition(point engo.Point) {
 	em.updateSpaceComponentCenterPosition()
 }
 
-func (em *EntityModel) Size() float32 {
-	return em.size
+// AddHitPoint Add hitpoint
+func (em *EntityModel) HitPoint() int {
+	return em.hitPoint
+}
+
+// SetHitPoint Set hitpoint
+func (em *EntityModel) SetHitPoint(hp int) {
+	em.hitPoint = hp
+}
+
+// AddHitPoint Add hitpoint
+func (em *EntityModel) AddHitPoint(hp int) {
+	em.hitPoint += hp
+}
+
+func (em *EntityModel) Width() float32 {
+	return em.spaceComponent.Width
+}
+
+func (em *EntityModel) Height() float32 {
+	return em.spaceComponent.Height
 }
 
 func (em *EntityModel) BasicEntity() ecs.BasicEntity {
 	return em.basicEntity
+}
+
+func (em *EntityModel) SetDrawable(drawable engoCommon.Drawable) {
+	em.renderComponent.Drawable = drawable
+	em.spaceComponent.Width = drawable.Width() * em.renderComponent.Scale.X
+	em.spaceComponent.Height = drawable.Height() * em.renderComponent.Scale.X
+	em.spaceComponent.Rotation = 0
+}
+
+func (em *EntityModel) SetScale(scale float32) {
+	em.scale = scale
+	em.UpdateScale()
+}
+
+func (em *EntityModel) UpdateScale() {
+	s := common.NewSetting()
+	baseScale := s.Scale()
+	baseScale.MultiplyScalar(em.scale)
+	em.renderComponent.Scale = baseScale
+}
+
+func (em *EntityModel) SetEntitySize(width, height float32) {
+	em.spaceComponent.Width = width
+	em.spaceComponent.Height = height
+}
+
+func (em *EntityModel) SetZIndex(index float32) {
+	em.renderComponent.SetZIndex(index)
+}
+
+// SetHidden is Entity hiddened
+func (em *EntityModel) SetHidden(b bool) {
+	em.renderComponent.Hidden = b
 }
 
 func (em *EntityModel) updateSpaceComponentCenterPosition() {

@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
 	"github.com/atoyr/goshooting/common"
@@ -14,43 +13,17 @@ import (
 
 // Builder is Entity Build Interface
 type Builder interface {
-	Build() Entity
+	Build() Modeler
 }
 
 // Mover is Entity Move Interface
 type Mover interface {
 	Move(vx, vy, speed float32)
-	MoveInfo(frame float32) (vx, vy float32)
 }
 
 // Attacker is Entity Attacking interface
 type Attacker interface {
 	Attack(entity *Entity, frame float32)
-}
-
-// EntityMove is Moving on entity
-type EntityMove struct {
-	Speed     float32
-	Angle     float32
-	SpeedRate float32
-	AngleRate float32
-}
-
-// EntityAttack is Attacking entity
-type EntityAttack struct {
-	Attack           EntityAttackFunc
-	AttackStartFrame float32
-	AttackFrame      float32
-}
-
-// EntityCollision is Judge Collision on Entity
-type EntityCollision struct {
-	isRenderCollision               bool
-	collisionBasicEntity            ecs.BasicEntity
-	collisionRenderComponent        engoCommon.RenderComponent
-	collisionSpaceComponent         engoCommon.SpaceComponent
-	collisionDetectionRelativePoint engo.Point // Collision Detection Position from relative virtualPosition
-	collisionDetectionSize          float32    // Collision Detection Size circle
 }
 
 // EntityAttackFunc is called entity.Attack()
@@ -59,100 +32,10 @@ type EntityAttackFunc func(entity *Entity, frame float32)
 // Entity is GameAreaEntityObject
 type Entity struct {
 	*EntityModel
-	*EntityMove
-	*EntityAttack
-	*EntityCollision
-}
 
-func (e *Entity) SetDrawable(drawable engoCommon.Drawable) {
-	e.renderComponent.Drawable = drawable
-	e.spaceComponent.Width = drawable.Width() * e.renderComponent.Scale.X
-	e.spaceComponent.Height = drawable.Height() * e.renderComponent.Scale.X
-	e.spaceComponent.Rotation = 0
-}
-
-func (e *Entity) SetScale(scale float32) {
-	e.scale = scale
-	e.UpdateScale()
-}
-
-func (e *Entity) UpdateScale() {
-	s := common.NewSetting()
-	baseScale := s.Scale()
-	baseScale.MultiplyScalar(e.scale)
-	e.renderComponent.Scale = baseScale
-}
-
-func (e *Entity) SetEntitySize(width, height float32) {
-	e.spaceComponent.Width = width
-	e.spaceComponent.Height = height
-}
-
-func (e *Entity) SetZIndex(index float32) {
-	e.renderComponent.SetZIndex(index)
-}
-
-// SetHidden is Entity hiddened
-func (e *Entity) SetHidden(b bool) {
-	e.renderComponent.Hidden = b
-	if e.isRenderCollision {
-		e.collisionRenderComponent.Hidden = true
-	}
-}
-
-// SetHitPoint Set hitpoint
-func (e *Entity) SetHitPoint(hp int32) {
-	e.hitPoint = hp
-}
-
-// AddHitPoint Add hitpoint
-func (e *Entity) AddHitPoint(hp int32) {
-	e.hitPoint += hp
-}
-
-// AddHitPoint Add hitpoint
-func (e *Entity) HitPoint() int32 {
-	return e.hitPoint
-}
-
-func (e *Entity) Mergin() engo.Point {
-	return engo.Point{X: e.renderComponent.Drawable.Width() * e.renderComponent.Scale.X, Y: e.renderComponent.Drawable.Height() * e.renderComponent.Scale.Y}
-}
-
-func (e *Entity) Hidden() bool {
-	return e.renderComponent.Hidden
-}
-
-func (e *Entity) SetCollisionDetectionRelativePoint(point engo.Point) {
-	e.collisionDetectionRelativePoint = point
-}
-
-func (e *Entity) updateCollisionSpaceComponentCenterPosition() {
-	s := common.NewSetting()
-	p := new(engo.Point)
-	p.Add(e.virtualPosition)
-	p.Add(e.collisionDetectionRelativePoint)
-	e.collisionSpaceComponent.SetCenter(s.ConvertVirtualPositionToRenderPosition(*p))
-}
-
-func (e *Entity) SetCollisionBasicEntity(basic ecs.BasicEntity) {
-	e.collisionBasicEntity = basic
-}
-
-func (e *Entity) IsRenderCollision() bool {
-	return e.isRenderCollision
-}
-
-func (e *Entity) AddedRenderSystemToCollisionComponent(rs *engoCommon.RenderSystem) {
-	rs.Add(&e.collisionBasicEntity, &e.collisionRenderComponent, &e.collisionSpaceComponent)
-	e.isRenderCollision = true
-}
-
-func (e *Entity) RemovedRenderSystemToCollisionComponent(rs *engoCommon.RenderSystem) uint64 {
-	i := e.collisionBasicEntity.ID()
-	rs.Remove(e.collisionBasicEntity)
-	e.isRenderCollision = false
-	return i
+	Attack           EntityAttackFunc
+	AttackStartFrame float32
+	AttackFrame      float32
 }
 
 func (e *Entity) MoveInfo(frame float32) (vx, vy float32) {
