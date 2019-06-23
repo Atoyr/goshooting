@@ -5,10 +5,15 @@ import (
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
 	"github.com/atoyr/goshooting/common"
+	"github.com/jinzhu/copier"
 )
 
+type Enemy struct {
+	*EntityModel
+}
+
 type EnemyBuilder struct {
-	*Entity
+	*Enemy
 }
 
 func NewEnemyBuilder() EnemyBuilder {
@@ -22,42 +27,18 @@ func NewEnemyBuilder() EnemyBuilder {
 		scale:           0.5,
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
+	model.SetPosition(engo.Point{X: 0, Y: 0})
 
-	move := new(EntityMove)
-	attack := new(EntityAttack)
-	collision := new(EntityCollision)
-	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
-	e.SetPosition(engo.Point{X: 0, Y: 0})
+	enemy := new(Enemy)
+	enemy.EntityModel = &model
 
-	return EnemyBuilder{&e}
+	return EnemyBuilder{enemy}
 }
 
-func (eb *EnemyBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
-	eb.collisionDetectionRelativePoint.Set(point.X, point.Y)
-}
+func (eb *EnemyBuilder) Build() Modeler {
+	enemy := new(Enemy)
+	copier.Copy(&enemy, eb.Enemy)
+	enemy.basicEntity = ecs.NewBasic()
 
-func (eb *EnemyBuilder) SetCollisionDetectionSize(size float32) {
-	eb.collisionDetectionSize = size
-}
-
-func (eb *EnemyBuilder) SetSpeed(speed float32) {
-	eb.Speed = speed
-}
-
-func (eb *EnemyBuilder) SetAngle(angle float32) {
-	eb.Angle = angle
-}
-
-func (eb *EnemyBuilder) SetSpeedRate(speedrate float32) {
-	eb.SpeedRate = speedrate
-}
-
-func (eb *EnemyBuilder) SetAngleRate(anglerate float32) {
-	eb.AngleRate = anglerate
-}
-
-func (eb *EnemyBuilder) Build() Entity {
-	e := eb.Entity.Clone()
-	e.basicEntity = ecs.NewBasic()
-	return *e
+	return *enemy
 }
