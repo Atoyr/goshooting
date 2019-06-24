@@ -12,7 +12,7 @@ type NumberBuilder struct {
 }
 
 type Number struct {
-	*Entity
+	*EntityModel
 	texture []engoCommon.Texture
 	value   int
 }
