@@ -74,7 +74,7 @@ func (em *EntityModel) SetHidden(hidden bool) {
 func (em *EntityModel) IsCollision(target Modeler) bool {
 	Position := em.Position()
 	targetPosition := target.Position()
-	collisionDetectionSize := em.Size() + target.Size()
+	collisionDetectionSize := em.Height() + target.Height()
 	return Position.PointDistanceSquared(targetPosition) <= collisionDetectionSize*collisionDetectionSize
 }
 
