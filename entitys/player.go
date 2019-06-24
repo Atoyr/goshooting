@@ -5,6 +5,7 @@ import (
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
 	"github.com/atoyr/goshooting/common"
+	"github.com/jinzhu/copier"
 )
 
 type Player struct {
@@ -29,9 +30,9 @@ func NewPlayerBuilder() PlayerBuilder {
 	model.SetPosition(engo.Point{X: 0, Y: 0})
 
 	player := new(Player)
-	player.EntityModel = model
+	player.EntityModel = &model
 
-	return PlayerBuilder{&player}
+	return PlayerBuilder{player}
 }
 
 func (pb *PlayerBuilder) Build() Modeler {
