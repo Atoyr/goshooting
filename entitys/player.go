@@ -7,8 +7,12 @@ import (
 	"github.com/atoyr/goshooting/common"
 )
 
+type Player struct {
+	*EntityModel
+}
+
 type PlayerBuilder struct {
-	*Entity
+	*Player
 }
 
 func NewPlayerBuilder() PlayerBuilder {
@@ -19,44 +23,21 @@ func NewPlayerBuilder() PlayerBuilder {
 		spaceComponent:  sc,
 		renderComponent: rc,
 		virtualPosition: engo.Point{X: 0, Y: 0},
-		scale:           0.5,
+		scale:           1,
 	}
 	model.renderComponent.Scale.MultiplyScalar(model.scale)
+	model.SetPosition(engo.Point{X: 0, Y: 0})
 
-	move := new(EntityMove)
-	attack := new(EntityAttack)
-	collision := new(EntityCollision)
-	e := Entity{EntityModel: &model, EntityMove: move, EntityAttack: attack, EntityCollision: collision}
-	e.SetPosition(engo.Point{X: 0, Y: 0})
-	return PlayerBuilder{&e}
+	player := new(Player)
+	player.EntityModel = model
+
+	return PlayerBuilder{&player}
 }
 
-func (pb *PlayerBuilder) SetCollisionDetectionRelatevePoint(point engo.Point) {
-	pb.collisionDetectionRelativePoint.Set(point.X, point.Y)
-}
+func (pb *PlayerBuilder) Build() Modeler {
+	player := new(Player)
+	copier.Copy(&player, pb.Player)
+	player.basicEntity = ecs.NewBasic()
 
-func (pb *PlayerBuilder) SetCollisionDetectionSize(size float32) {
-	pb.collisionDetectionSize = size
-}
-
-func (pb *PlayerBuilder) SetSpeed(speed float32) {
-	pb.Entity.Speed = speed
-}
-
-func (pb *PlayerBuilder) SetAngle(angle float32) {
-	pb.Entity.Angle = angle
-}
-
-func (pb *PlayerBuilder) SetSpeedRate(speedrate float32) {
-	pb.Entity.SpeedRate = speedrate
-}
-
-func (pb *PlayerBuilder) SetAngleRate(anglerate float32) {
-	pb.Entity.AngleRate = anglerate
-}
-
-func (pb *PlayerBuilder) Build() Entity {
-	e := pb.Entity.Clone()
-	e.basicEntity = ecs.NewBasic()
-	return *e
+	return *player
 }
