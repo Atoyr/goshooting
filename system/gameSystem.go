@@ -16,10 +16,12 @@ type GameSystem struct {
 	world        *ecs.World
 	renderSystem *engoCommon.RenderSystem
 
+	entityList []*Modeler
+
 	framecount             uint64
-	playerEntity           *entitys.Entity
-	playerBulletEntitys    map[uint64]*entitys.Entity
-	enemyEntitys           map[uint64]*entitys.Entity
+	playerEntityID         uint64
+	playerBulletIDs        uint64
+	enemyIDs               uint64
 	enemyBulletEntitys     map[uint64]*entitys.Entity
 	playerBulletStartCount uint64
 	enemyBulletCount       uint64
