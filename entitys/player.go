@@ -10,6 +10,8 @@ import (
 
 type Player struct {
 	*EntityModel
+	LowSpeed float32
+	Speed    float32
 }
 
 type PlayerBuilder struct {

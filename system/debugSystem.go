@@ -26,7 +26,7 @@ func (ds *DebugSystem) New(w *ecs.World) {
 
 	cb, _ := entitys.NewCharacterBuilder(common.Character_16_16)
 	cb.SetCharacter("A")
-	cb.SetVirtualPosition(engo.Point{X: 0, Y: 0})
+	cb.SetPosition(engo.Point{X: 0, Y: 0})
 	c := cb.Build()
 
 	for _, system := range w.Systems() {
