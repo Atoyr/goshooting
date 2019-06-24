@@ -25,7 +25,7 @@ func NewNumberGroupBuilder(digit int, size acommon.NumberSize, scale float32, sc
 	p := sc.Position
 	for i := 1; i <= digit; i++ {
 		nb, err := NewNumberBuilder(size)
-		nb.SetVirtualPosition(p)
+		nb.SetPosition(p)
 		if err != nil {
 			return nil, err
 		}

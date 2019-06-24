@@ -26,14 +26,10 @@ func NewNumberBuilder(size common.NumberSize) (*NumberBuilder, error) {
 	sc := engoCommon.SpaceComponent{Position: engo.Point{X: 0, Y: 0}}
 	r := engoCommon.RenderComponent{Drawable: t[0], Hidden: true}
 	em := EntityModel{spaceComponent: sc, renderComponent: r}
-	emover := EntityMove{}
-	attack := new(EntityAttack)
-	collison := new(EntityCollision)
-	e := Entity{EntityModel: &em, EntityMove: &emover, EntityAttack: attack, EntityCollision: collison}
 	n := Number{
-		Entity:  &e,
-		value:   -1,
-		texture: t,
+		EntityModel: &em,
+		value:       -1,
+		texture:     t,
 	}
 	return &NumberBuilder{
 		&n,
