@@ -66,6 +66,7 @@ func (em *EntityModel) Hidden() bool {
 	return em.renderComponent.Hidden
 }
 
+// SetHidden is Entity hiddened
 func (em *EntityModel) SetHidden(hidden bool) {
 	em.renderComponent.Hidden = hidden
 }
@@ -146,11 +147,6 @@ func (em *EntityModel) SetEntitySize(width, height float32) {
 
 func (em *EntityModel) SetZIndex(index float32) {
 	em.renderComponent.SetZIndex(index)
-}
-
-// SetHidden is Entity hiddened
-func (em *EntityModel) SetHidden(b bool) {
-	em.renderComponent.Hidden = b
 }
 
 func (em *EntityModel) updateSpaceComponentCenterPosition() {
