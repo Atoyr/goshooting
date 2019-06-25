@@ -3,7 +3,6 @@ package system
 import (
 	"fmt"
 	"math"
-	"reflect"
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
@@ -245,9 +244,7 @@ func (gs *GameSystem) addModeler(m entitys.Modeler) error {
 		l := make([]entitys.Modeler, id-c-1)
 		gs.entityList = append(gs.entityList, l...)
 	}
-	fmt.Printf("%d %s \n", id, reflect.TypeOf(m))
 	gs.entityList[id] = m
-	fmt.Printf("%d %s \n", id, reflect.TypeOf(gs.entityList[id]))
 	return nil
 }
 
