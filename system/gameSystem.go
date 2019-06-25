@@ -60,20 +60,14 @@ func (gs *GameSystem) New(w *ecs.World) {
 	bb.SetZIndex(10)
 	bb.SetHitPoint(10)
 	playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, &bb)
-	bb2 := entitys.NewBulletBuilder()
-	bb2.SetDrawable(bulletTexture)
-	bb2.Speed = 16
-	bb2.SetZIndex(10)
-	bb2.SetHitPoint(10)
-	bb2.SetRotation(30)
-	playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, &bb2)
-	bb3 := entitys.NewBulletBuilder()
-	bb3.SetDrawable(bulletTexture)
-	bb3.Speed = 16
-	bb3.SetZIndex(10)
-	bb3.SetHitPoint(10)
-	bb3.SetRotation(-30)
-	playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, &bb3)
+	if bb2, ok := bb.Clone().(*entitys.BulletBuilder); ok {
+		bb2.SetRotation(30)
+		playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, bb2)
+	}
+	if bb3, ok := bb.Clone().(*entitys.BulletBuilder); ok {
+		bb3.SetRotation(-30)
+		playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, bb3)
+	}
 
 	playerBuilder.Attack = func(modeler entitys.Modeler, frame uint64) []entitys.Modeler {
 		modelers := make([]entitys.Modeler, 0)

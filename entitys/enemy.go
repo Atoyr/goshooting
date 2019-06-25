@@ -48,3 +48,16 @@ func (eb *EnemyBuilder) Build() Modeler {
 
 	return *enemy
 }
+
+func (eb *EnemyBuilder) Clone() Builder {
+	builder := new(EnemyBuilder)
+	entityModel := new(EntityModel)
+	enemy := new(Enemy)
+	copier.Copy(&entityModel, eb.EntityModel)
+	copier.Copy(&enemy, eb.Enemy)
+	enemy.EntityModel = entityModel
+	builder.Enemy = enemy
+
+	return builder
+
+}

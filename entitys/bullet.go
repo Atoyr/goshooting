@@ -73,3 +73,15 @@ func (bb *BulletBuilder) Build() Modeler {
 
 	return *bullet
 }
+
+func (bb *BulletBuilder) Clone() Builder {
+	builder := new(BulletBuilder)
+	entityModel := new(EntityModel)
+	bullet := new(Bullet)
+	copier.Copy(&entityModel, bb.EntityModel)
+	copier.Copy(&bullet, bb.Bullet)
+	bullet.EntityModel = entityModel
+	builder.Bullet = bullet
+
+	return builder
+}

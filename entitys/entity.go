@@ -3,6 +3,7 @@ package entitys
 // Builder is Entity Build Interface
 type Builder interface {
 	Build() Modeler
+	Clone() Builder
 }
 
 // Mover is Entity Move Interface

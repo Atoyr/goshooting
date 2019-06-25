@@ -78,3 +78,15 @@ func (pb *PlayerBuilder) Build() Modeler {
 
 	return *player
 }
+
+func (pb *PlayerBuilder) Clone() Builder {
+	builder := new(PlayerBuilder)
+	entityModel := new(EntityModel)
+	player := new(Player)
+	copier.Copy(&entityModel, pb.EntityModel)
+	copier.Copy(&player, pb.Player)
+	player.EntityModel = entityModel
+	builder.Player = player
+
+	return builder
+}
