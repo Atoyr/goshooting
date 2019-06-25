@@ -7,7 +7,7 @@ type Builder interface {
 
 // Mover is Entity Move Interface
 type Mover interface {
-	Move(vx, vy, speed float32)
+	Move(frame uint64)
 }
 
 // Attacker is Entity Attacking interface

@@ -12,30 +12,13 @@ import (
 type Bullet struct {
 	*EntityModel
 
-	Speed     float32
-	Angle     float32
-	SpeedRate float32
-	AngleRate float32
-}
-
-func (b *Bullet) SetSpeed(speed float32) {
-	b.Speed = speed
-}
-
-func (b *Bullet) SetAngle(angle float32) {
-	b.Angle = angle
-}
-
-func (b *Bullet) SetSpeedRate(speedrate float32) {
-	b.SpeedRate = speedrate
-}
-
-func (b *Bullet) SetAngleRate(anglerate float32) {
-	b.AngleRate = anglerate
+	Speed        float32
+	SpeedRate    float32
+	RotationRate float32
 }
 
 func (b *Bullet) Move() {
-	rad := float64((b.Angle - 90) / float32(180) * math.Pi)
+	rad := float64((b.Rotation() - 90) / float32(180) * math.Pi)
 	vx := float32(math.Cos(rad))
 	vy := float32(math.Sin(rad))
 
@@ -48,7 +31,7 @@ func (b *Bullet) Move() {
 	vector.MultiplyScalar(speed)
 
 	b.AddPosition(vector)
-	b.Angle += b.AngleRate
+	b.AddRotation(b.RotationRate)
 	b.Speed += b.SpeedRate
 }
 
@@ -75,9 +58,8 @@ func NewBulletBuilder() BulletBuilder {
 
 	bullet.EntityModel = &model
 	bullet.Speed = 0
-	bullet.Angle = 0
 	bullet.SpeedRate = 0
-	bullet.AngleRate = 0
+	bullet.RotationRate = 0
 	return BulletBuilder{bullet}
 }
 

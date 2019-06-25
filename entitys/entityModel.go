@@ -31,6 +31,9 @@ type Modeler interface {
 
 	Width() float32
 	Height() float32
+	Rotation() float32
+	SetRotation(rotation float32)
+	AddRotation(rotation float32)
 }
 
 // EntityModel is Entity Base
@@ -116,6 +119,18 @@ func (em *EntityModel) Width() float32 {
 
 func (em *EntityModel) Height() float32 {
 	return em.spaceComponent.Height
+}
+
+func (em *EntityModel) Rotation() float32 {
+	return em.spaceComponent.Rotation
+}
+
+func (em *EntityModel) SetRotation(rotation float32) {
+	em.spaceComponent.Rotation = rotation
+}
+
+func (em *EntityModel) AddRotation(rotation float32) {
+	em.spaceComponent.Rotation = em.spaceComponent.Rotation + rotation
 }
 
 func (em *EntityModel) BasicEntity() *ecs.BasicEntity {

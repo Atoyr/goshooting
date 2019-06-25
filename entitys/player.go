@@ -11,9 +11,10 @@ import (
 
 type Player struct {
 	*EntityModel
-	LowSpeed float32
-	Speed    float32
-	Attack   func(modeler Modeler, frame uint64) []Modeler
+	LowSpeed          float32
+	Speed             float32
+	Attack            func(modeler Modeler, frame uint64) []Modeler
+	AttackBuilderList []Builder
 }
 
 func (p *Player) Vector(isleft, isright, isup, isdown, islowspeed bool) engo.Point {
@@ -62,6 +63,7 @@ func NewPlayerBuilder() PlayerBuilder {
 
 	player := new(Player)
 	player.EntityModel = &model
+	player.AttackBuilderList = make([]Builder, 0)
 
 	return PlayerBuilder{player}
 }

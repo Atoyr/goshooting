@@ -51,29 +51,42 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.SetPosition(engo.Point{X: 0, Y: 100})
 	playerBuilder.Speed = 8
 	playerBuilder.LowSpeed = 4
-	playerBuilder.SetZIndex(10)
+	playerBuilder.SetZIndex(200)
 	playerBuilder.SetHitPoint(1)
+
+	bulletTexture := common.GetTexture("textures/bullet3.png")
+	bb := entitys.NewBulletBuilder()
+	bb.SetDrawable(bulletTexture)
+	bb.Speed = 16
+	bb.SetZIndex(10)
+	bb.SetHitPoint(10)
+	playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, &bb)
+	bb2 := entitys.NewBulletBuilder()
+	bb2.SetDrawable(bulletTexture)
+	bb2.Speed = 16
+	bb2.SetZIndex(10)
+	bb2.SetHitPoint(10)
+	bb2.SetRotation(30)
+	playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, &bb2)
+	bb3 := entitys.NewBulletBuilder()
+	bb3.SetDrawable(bulletTexture)
+	bb3.Speed = 16
+	bb3.SetZIndex(10)
+	bb3.SetHitPoint(10)
+	bb3.SetRotation(-30)
+	playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, &bb3)
 
 	playerBuilder.Attack = func(modeler entitys.Modeler, frame uint64) []entitys.Modeler {
 		modelers := make([]entitys.Modeler, 0)
 
-		bulletTexture := common.GetTexture("textures/bullet3.png")
-		bb := entitys.NewBulletBuilder()
-		bb.SetDrawable(bulletTexture)
-		bb.SetPosition(modeler.Position())
-		bb.SetSpeed(16)
-		bb.SetZIndex(10)
-		bb.SetHitPoint(10)
+		if p, ok := modeler.(entitys.Player); ok {
 
-		b := bb.Build()
-		bb.Angle = 30
-		b2 := bb.Build()
-		bb.Angle = -30
-		b3 := bb.Build()
-		modelers = append(modelers, b)
-		modelers = append(modelers, b2)
-		modelers = append(modelers, b3)
-		fmt.Printf("%d  ; %d  ; %d  ;  \n", b.ID(), b2.ID(), b3.ID())
+			for _, bb := range p.AttackBuilderList {
+				b := bb.Build()
+				b.SetPosition(p.Position())
+				modelers = append(modelers, b)
+			}
+		}
 		return modelers
 	}
 
