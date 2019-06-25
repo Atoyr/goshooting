@@ -6,12 +6,40 @@ import (
 	engoCommon "github.com/EngoEngine/engo/common"
 	"github.com/atoyr/goshooting/common"
 	"github.com/jinzhu/copier"
+	"math"
 )
 
 type Player struct {
 	*EntityModel
 	LowSpeed float32
 	Speed    float32
+}
+
+func (p *Player) Vector(isleft, isright, isup, isdown, islowspeed bool) engo.Point {
+	vx := float32(0)
+	vy := float32(0)
+	if isleft && !isright {
+		vx = -1
+	} else if !isleft && isright {
+		vx = 1
+	}
+	if isup && !isdown {
+		vy = -1
+	} else if !isup && isdown {
+		vy = 1
+	}
+	vector := engo.Point{X: vx, Y: vy}
+	if vx == 0 && vy == 0 {
+		return vector
+	}
+	speed := p.Speed
+	if islowspeed {
+		speed = p.LowSpeed
+	}
+	speed = speed / float32(math.Sqrt(float64(vx*vx+vy*vy)))
+	vector.MultiplyScalar(speed)
+
+	return vector
 }
 
 type PlayerBuilder struct {

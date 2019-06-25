@@ -1,7 +1,9 @@
 package system
 
 import (
+	"fmt"
 	"math"
+	"reflect"
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
@@ -54,6 +56,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.SetDrawable(playerTexture)
 	playerBuilder.SetPosition(engo.Point{X: 0, Y: 100})
 	playerBuilder.Speed = 8
+	playerBuilder.LowSpeed = 4
 	playerBuilder.SetZIndex(10)
 	playerBuilder.SetHitPoint(1)
 
@@ -66,6 +69,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	// Regist Entity
 
 	player := playerBuilder.Build()
+	gs.playerEntityID = player.ID()
 	gs.addModeler(player)
 
 	enemy := enemyBuilder.Build()
@@ -81,39 +85,20 @@ func (gs *GameSystem) Update(dt float32) {
 	if gs.framecount == math.MaxInt64 {
 		gs.framecount = 0
 	}
-	// get inputs
+
 	// Get Input
-	//	isleft := engo.Input.Button("MoveLeft").Down()
-	//	isright := engo.Input.Button("MoveRight").Down()
-	//	isup := engo.Input.Button("MoveUp").Down()
-	//	isdown := engo.Input.Button("MoveDown").Down()
-	//	islowspeed := engo.Input.Button("LowSpeed").Down()
+	isleft := engo.Input.Button("MoveLeft").Down()
+	isright := engo.Input.Button("MoveRight").Down()
+	isup := engo.Input.Button("MoveUp").Down()
+	isdown := engo.Input.Button("MoveDown").Down()
+	islowspeed := engo.Input.Button("LowSpeed").Down()
 	// isshot := engo.Input.Button("Shot").Down()
 
-	// setSpeed
-	// speed := float32(0)
-	// if islowspeed {
-	// speed = 4
-	// } else {
-	// speed = 8
-	// }
-
-	// Get vx vy
-	//	vx := float32(0)
-	//	vy := float32(0)
-	//	if isleft && !isright {
-	//		vx = -1
-	//	} else if !isleft && isright {
-	//		vx = 1
-	//	}
-	//	if isup && !isdown {
-	//		vy = -1
-	//	} else if !isup && isdown {
-	//		vy = 1
-	//	}
-	//
 	// Move Player
-	// gs.playerEntity.Move(vx, vy, speed)
+	if p, ok := gs.entityList[gs.playerEntityID].(entitys.Player); ok {
+		v := p.Vector(isleft, isright, isup, isdown, islowspeed)
+		p.AddPosition(v)
+	}
 
 	// Move PlayerBullet and hidden PlayerBullet
 	//	for _, pb := range gs.playerBulletEntitys {
@@ -180,11 +165,32 @@ func (gs *GameSystem) Remove(b ecs.BasicEntity) {
 	}
 }
 
-func (gs *GameSystem) addModeler(m entitys.Modeler) {
-	id := int(m.ID())
+func (gs *GameSystem) addModeler(m entitys.Modeler) error {
+	id := 0
+	if tmpid := m.ID(); tmpid > math.MaxInt32 {
+		return fmt.Errorf("ID is out of index : %d", m.ID())
+	} else {
+		id = int(tmpid)
+	}
+
 	if c := cap(gs.entityList); c < id {
 		l := make([]entitys.Modeler, id-c-1)
 		gs.entityList = append(gs.entityList, l...)
 	}
+	fmt.Printf("%d %s \n", id, reflect.TypeOf(m))
 	gs.entityList[id] = m
+	fmt.Printf("%d %s \n", id, reflect.TypeOf(gs.entityList[id]))
+	return nil
+}
+
+func (gs *GameSystem) removeModeler(id uint64) (error, entitys.Modeler) {
+	if id > math.MaxInt32 {
+		return fmt.Errorf("ID is out of index : %d", id), nil
+	}
+	if i := int(id); cap(gs.entityList) < i {
+		return fmt.Errorf("ID is out of index : %d", id), nil
+	}
+	e := gs.entityList[id]
+	gs.entityList[id] = nil
+	return nil, e
 }
