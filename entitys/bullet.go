@@ -17,7 +17,7 @@ type Bullet struct {
 	RotationRate float32
 }
 
-func (b *Bullet) Move() {
+func (b *Bullet) Move(frame uint64) {
 	rad := float64((b.Rotation() - 90) / float32(180) * math.Pi)
 	vx := float32(math.Cos(rad))
 	vy := float32(math.Sin(rad))
