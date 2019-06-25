@@ -82,8 +82,11 @@ func NewBulletBuilder() BulletBuilder {
 }
 
 func (bb *BulletBuilder) Build() Modeler {
+	entityModel := new(EntityModel)
 	bullet := new(Bullet)
+	copier.Copy(&entityModel, bb.EntityModel)
 	copier.Copy(&bullet, bb.Bullet)
+	bullet.EntityModel = entityModel
 	bullet.basicEntity = ecs.NewBasic()
 
 	return *bullet

@@ -66,7 +66,14 @@ func (gs *GameSystem) New(w *ecs.World) {
 		bb.SetHitPoint(10)
 
 		b := bb.Build()
+		bb.Angle = 30
+		b2 := bb.Build()
+		bb.Angle = -30
+		b3 := bb.Build()
 		modelers = append(modelers, b)
+		modelers = append(modelers, b2)
+		modelers = append(modelers, b3)
+		fmt.Printf("%d  ; %d  ; %d  ;  \n", b.ID(), b2.ID(), b3.ID())
 		return modelers
 	}
 
