@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/EngoEngine/engo"
@@ -19,14 +20,14 @@ var (
 	settingOnce sync.Once
 )
 
-var baseCanvasHeight float32 = float32(423)
-var baseGameAreaSize engo.Point = engo.Point{X: 300, Y: 400}
+var baseCanvasHeight float32 = float32(846)
+var baseGameAreaSize engo.Point = engo.Point{X: 600, Y: 800}
 
 // NewSetting is create setting at once and return setting
 func NewSetting() *Setting {
 	settingOnce.Do(func() {
 		renderPositionRate := engo.Point{X: 0.5, Y: 0.5}
-		renderScale := float32(0.5)
+		renderScale := float32(1)
 		setting = &Setting{
 			renderPositionRate: renderPositionRate,
 			renderScale:        renderScale,
@@ -41,7 +42,9 @@ func NewSetting() *Setting {
 func (s *Setting) UpdateRenderParams() engo.Point {
 	xy := engo.Point{X: engo.CanvasWidth(), Y: engo.CanvasHeight()}
 	s.renderCanvas = xy
+	fmt.Println(s.renderScale)
 	s.renderScale = xy.Y / baseCanvasHeight
+	fmt.Println(s.renderScale)
 	return xy
 }
 
