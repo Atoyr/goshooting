@@ -42,7 +42,8 @@ func (gs *GameSystem) New(w *ecs.World) {
 	// load texture
 	playerTexture := common.GetTexture("textures/player.png")
 	enemyTexture := common.GetTexture("textures/enemy.png")
-	common.GetTexture("textures/bullet3.png")
+	enemybulletTexture := common.GetTexture("textures/bullet2.png")
+	bulletTexture := common.GetTexture("textures/bullet3.png")
 
 	// Create Entity
 	// Player
@@ -54,7 +55,6 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.SetZIndex(200)
 	playerBuilder.SetHitPoint(1)
 
-	bulletTexture := common.GetTexture("textures/bullet3.png")
 	bb := entitys.NewBulletBuilder()
 	bb.SetDrawable(bulletTexture)
 	bb.Speed = 16
@@ -95,6 +95,28 @@ func (gs *GameSystem) New(w *ecs.World) {
 	enemyBuilder.SetDrawable(enemyTexture)
 	enemyBuilder.SetPosition(engo.Point{X: 0, Y: -100})
 	enemyBuilder.SetHitPoint(100)
+	eb := entitys.NewBulletBuilder()
+	eb.SetDrawable(enemybulletTexture)
+	eb.Speed = 16
+	eb.SetZIndex(10)
+	eb.SetHitPoint(10)
+	enemyBuilder.AttackBuilderList = append(enemyBuilder.AttackBuilderList, &eb)
+	enemyBuilder.Attack = func(modeler entitys.Modeler, frame uint64) []entitys.Modeler {
+		modelers := make([]entitys.Modeler, 0)
+
+		if e, ok := modeler.(entitys.Enemy); ok {
+
+			for _, ab := range e.AttackBuilderList {
+				if x, ok := ab.(*entitys.BulletBuilder); ok {
+					x.AddRotation(10)
+					b := x.Build()
+					b.SetPosition(e.Position())
+					modelers = append(modelers, b)
+				}
+			}
+		}
+		return modelers
+	}
 
 	// Regist Entity
 
@@ -103,6 +125,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 	gs.addModeler(player)
 
 	enemy := enemyBuilder.Build()
+	gs.enemyIDs = append(gs.enemyIDs, enemy.ID())
 	gs.addModeler(enemy)
 
 	player.AddedRenderSystem(gs.renderSystem)
@@ -149,6 +172,26 @@ func (gs *GameSystem) Update(dt float32) {
 	}
 
 	// Enemy action
+	for _, enemyid := range gs.enemyIDs {
+		if e, ok := gs.entityList[enemyid].(entitys.Enemy); ok {
+			// Move Enemy
+
+			// Move Enemy Bullet
+			for _, child := range e.BasicEntity().Children() {
+				if b, ok := gs.entityList[child.ID()].(entitys.Bullet); ok {
+					b.Move()
+				}
+			}
+
+			// Attack for Enemy
+			modelers := e.Attack(e, gs.framecount)
+			for _, m := range modelers {
+				m.AddedRenderSystem(gs.renderSystem)
+				e.AppendChild(m.BasicEntity())
+				gs.addModeler(m)
+			}
+		}
+	}
 
 	// Collision
 	// TODO : go chan
@@ -178,16 +221,6 @@ func (gs *GameSystem) Update(dt float32) {
 	//				}
 	//			}
 	//		}
-	//	}
-
-	// EnemyBullet Upate
-	//	for _, eb := range gs.enemyBulletEntitys {
-	//		//		if !eb.IsOverGameArea() {
-	//		//			eb.Update(dt)
-	//		//		}
-	//		//		if eb.IsOverGameArea() && !eb.Hidden() {
-	//		//			eb.SetHidden(true)
-	//		//		}
 	//	}
 }
 

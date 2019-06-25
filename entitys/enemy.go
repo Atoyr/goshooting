@@ -10,6 +10,8 @@ import (
 
 type Enemy struct {
 	*EntityModel
+	Attack            func(modeler Modeler, frame uint64) []Modeler
+	AttackBuilderList []Builder
 }
 
 type EnemyBuilder struct {
@@ -31,6 +33,7 @@ func NewEnemyBuilder() EnemyBuilder {
 
 	enemy := new(Enemy)
 	enemy.EntityModel = &model
+	enemy.AttackBuilderList = make([]Builder, 0)
 
 	return EnemyBuilder{enemy}
 }
