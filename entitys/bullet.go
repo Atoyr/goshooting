@@ -34,13 +34,17 @@ func (b *Bullet) SetAngleRate(anglerate float32) {
 	b.AngleRate = anglerate
 }
 
-func (b *Bullet) Move(vx, vy, speed float32) {
+func (b *Bullet) Move() {
+	rad := float64((b.Angle - 90) / float32(180) * math.Pi)
+	vx := float32(math.Cos(rad))
+	vy := float32(math.Sin(rad))
+
 	if vx == 0 && vy == 0 {
 		return
 	}
 
 	vector := engo.Point{X: vx, Y: vy}
-	speed = float32(speed) / float32(math.Sqrt(float64(vx*vx+vy*vy)))
+	speed := float32(b.Speed) / float32(math.Sqrt(float64(vx*vx+vy*vy)))
 	vector.MultiplyScalar(speed)
 
 	b.AddPosition(vector)

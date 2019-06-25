@@ -104,10 +104,18 @@ func (gs *GameSystem) Update(dt float32) {
 	islowspeed := engo.Input.Button("LowSpeed").Down()
 	isshot := engo.Input.Button("Shot").Down()
 
-	// Move Player
+	// Player action
 	if p, ok := gs.entityList[gs.playerEntityID].(entitys.Player); ok {
+		// Move Player
 		v := p.Vector(isleft, isright, isup, isdown, islowspeed)
 		p.AddPosition(v)
+
+		// Move Player Bullet
+		for _, child := range p.BasicEntity().Children() {
+			if b, ok := gs.entityList[child.ID()].(entitys.Bullet); ok {
+				b.Move()
+			}
+		}
 
 		// Attack for Player
 		if isshot {
@@ -120,7 +128,11 @@ func (gs *GameSystem) Update(dt float32) {
 		}
 	}
 
+	// Enemy action
+
 	// Collision
+	// TODO : go chan
+
 	//	if gs.framecount%60 == 0 {
 	//		for _, e := range gs.enemyEntitys {
 	//			if gs.playerEntity.IsCollision(e.EntityModel) {
