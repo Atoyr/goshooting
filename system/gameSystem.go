@@ -69,6 +69,8 @@ func (gs *GameSystem) New(w *ecs.World) {
 		playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, bb3)
 	}
 
+	playerBuilder.AttackIntervalFrame = 100
+
 	playerBuilder.Attack = func(modeler entitys.Modeler, frame uint64) []entitys.Modeler {
 		modelers := make([]entitys.Modeler, 0)
 
@@ -149,17 +151,19 @@ func (gs *GameSystem) Update(dt float32) {
 		// Move Player Bullet
 		for _, child := range p.BasicEntity().Children() {
 			if b, ok := gs.entityList[child.ID()].(entitys.Bullet); ok {
-				b.Move()
+				b.Move(gs.framecount)
 			}
 		}
 
 		// Attack for Player
 		if isshot {
-			modelers := p.Attack(p, gs.framecount)
-			for _, m := range modelers {
-				m.AddedRenderSystem(gs.renderSystem)
-				p.AppendChild(m.BasicEntity())
-				gs.addModeler(m)
+			if p.WantToRunAttack(gs.framecount) {
+				modelers := p.Attack(p, gs.framecount)
+				for _, m := range modelers {
+					m.AddedRenderSystem(gs.renderSystem)
+					p.AppendChild(m.BasicEntity())
+					gs.addModeler(m)
+				}
 			}
 		}
 	}
@@ -172,7 +176,7 @@ func (gs *GameSystem) Update(dt float32) {
 			// Move Enemy Bullet
 			for _, child := range e.BasicEntity().Children() {
 				if b, ok := gs.entityList[child.ID()].(entitys.Bullet); ok {
-					b.Move()
+					b.Move(gs.framecount)
 				}
 			}
 

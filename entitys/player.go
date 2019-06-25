@@ -1,6 +1,7 @@
 package entitys
 
 import (
+	"fmt"
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	engoCommon "github.com/EngoEngine/engo/common"
@@ -11,10 +12,12 @@ import (
 
 type Player struct {
 	*EntityModel
-	LowSpeed          float32
-	Speed             float32
-	Attack            func(modeler Modeler, frame uint64) []Modeler
-	AttackBuilderList []Builder
+	LowSpeed            float32
+	Speed               float32
+	Attack              func(modeler Modeler, frame uint64) []Modeler
+	AttackBuilderList   []Builder
+	AttackStartFrame    uint64
+	AttackIntervalFrame uint64
 }
 
 func (p *Player) Vector(isleft, isright, isup, isdown, islowspeed bool) engo.Point {
@@ -44,6 +47,19 @@ func (p *Player) Vector(isleft, isright, isup, isdown, islowspeed bool) engo.Poi
 	return vector
 }
 
+func (p *Player) WantToRunAttack(frame uint64) bool {
+	fmt.Println(p.AttackStartFrame)
+	fmt.Println(frame)
+	diffFrame := frame - p.AttackStartFrame
+	if diffFrame < p.AttackIntervalFrame {
+		return false
+	}
+	fmt.Printf("set frame %d", frame)
+	p.AttackStartFrame = frame
+	fmt.Println(p.AttackStartFrame)
+	return true
+}
+
 type PlayerBuilder struct {
 	*Player
 }
@@ -64,6 +80,7 @@ func NewPlayerBuilder() PlayerBuilder {
 	player := new(Player)
 	player.EntityModel = &model
 	player.AttackBuilderList = make([]Builder, 0)
+	player.AttackStartFrame = 0
 
 	return PlayerBuilder{player}
 }
