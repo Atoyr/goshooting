@@ -36,8 +36,11 @@ func NewEnemyBuilder() EnemyBuilder {
 }
 
 func (eb *EnemyBuilder) Build() Modeler {
+	entityModel := new(EntityModel)
 	enemy := new(Enemy)
+	copier.Copy(&entityModel, eb.EntityModel)
 	copier.Copy(&enemy, eb.Enemy)
+	enemy.EntityModel = entityModel
 	enemy.basicEntity = ecs.NewBasic()
 
 	return *enemy

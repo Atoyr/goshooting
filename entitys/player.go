@@ -67,8 +67,11 @@ func NewPlayerBuilder() PlayerBuilder {
 }
 
 func (pb *PlayerBuilder) Build() Modeler {
+	entityModel := new(EntityModel)
 	player := new(Player)
+	copier.Copy(&entityModel, pb.EntityModel)
 	copier.Copy(&player, pb.Player)
+	player.EntityModel = entityModel
 	player.basicEntity = ecs.NewBasic()
 
 	return *player
