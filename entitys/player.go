@@ -13,6 +13,7 @@ type Player struct {
 	*EntityModel
 	LowSpeed float32
 	Speed    float32
+	Attack   func(modeler Modeler, frame uint64) []Modeler
 }
 
 func (p *Player) Vector(isleft, isright, isup, isdown, islowspeed bool) engo.Point {

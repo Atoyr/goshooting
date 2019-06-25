@@ -12,7 +12,7 @@ type Mover interface {
 
 // Attacker is Entity Attacking interface
 type Attacker interface {
-	Attack()
+	Attack(modeler Modeler, frame uint64) []Modeler
 }
 
 // EntityAttackFunc is called entity.Attack()

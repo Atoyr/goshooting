@@ -19,13 +19,9 @@ type GameSystem struct {
 
 	entityList []entitys.Modeler
 
-	framecount             uint64
-	playerEntityID         uint64
-	playerBulletIDs        []uint64
-	enemyIDs               []uint64
-	enemyBulletIDs         []uint64
-	playerBulletStartCount uint64
-	enemyBulletCount       uint64
+	framecount     uint64
+	playerEntityID uint64
+	enemyIDs       []uint64
 
 	builderCollection map[string]entitys.Builder
 }
@@ -34,8 +30,6 @@ type GameSystem struct {
 func (gs *GameSystem) New(w *ecs.World) {
 	gs.world = w
 	gs.framecount = 0
-	gs.playerBulletStartCount = 0
-	gs.enemyBulletCount = 0
 	gs.entityList = make([]entitys.Modeler, 131072)
 
 	for _, system := range w.Systems() {
@@ -59,6 +53,22 @@ func (gs *GameSystem) New(w *ecs.World) {
 	playerBuilder.LowSpeed = 4
 	playerBuilder.SetZIndex(10)
 	playerBuilder.SetHitPoint(1)
+
+	playerBuilder.Attack = func(modeler entitys.Modeler, frame uint64) []entitys.Modeler {
+		modelers := make([]entitys.Modeler, 0)
+
+		bulletTexture := common.GetTexture("textures/bullet3.png")
+		bb := entitys.NewBulletBuilder()
+		bb.SetDrawable(bulletTexture)
+		bb.SetPosition(modeler.Position())
+		bb.SetSpeed(16)
+		bb.SetZIndex(10)
+		bb.SetHitPoint(10)
+
+		b := bb.Build()
+		modelers = append(modelers, b)
+		return modelers
+	}
 
 	// enemy
 	enemyBuilder := entitys.NewEnemyBuilder()
@@ -92,31 +102,24 @@ func (gs *GameSystem) Update(dt float32) {
 	isup := engo.Input.Button("MoveUp").Down()
 	isdown := engo.Input.Button("MoveDown").Down()
 	islowspeed := engo.Input.Button("LowSpeed").Down()
-	// isshot := engo.Input.Button("Shot").Down()
+	isshot := engo.Input.Button("Shot").Down()
 
 	// Move Player
 	if p, ok := gs.entityList[gs.playerEntityID].(entitys.Player); ok {
 		v := p.Vector(isleft, isright, isup, isdown, islowspeed)
 		p.AddPosition(v)
+
+		// Attack for Player
+		if isshot {
+			modelers := p.Attack(p, gs.framecount)
+			for _, m := range modelers {
+				m.AddedRenderSystem(gs.renderSystem)
+				p.AppendChild(m.BasicEntity())
+				gs.addModeler(m)
+			}
+		}
 	}
 
-	// Move PlayerBullet and hidden PlayerBullet
-	//	for _, pb := range gs.playerBulletEntitys {
-	//		//		if !pb.IsOverGameArea() {
-	//		//			pb.Update(dt)
-	//		//		}
-	//		//		if pb.IsOverGameArea() && !pb.Hidden() {
-	//		//			pb.SetHidden(true)
-	//		//		}
-	//	}
-
-	// Attack for Player
-	//	if isshot {
-	//		gs.playerEntity.Attack(gs.playerEntity, dt)
-	//	} else if !isshot {
-	//		gs.playerEntity.AttackStartFrame = -1
-	//	}
-	//
 	// Collision
 	//	if gs.framecount%60 == 0 {
 	//		for _, e := range gs.enemyEntitys {

@@ -10,6 +10,7 @@ import (
 // Modeler is EntityModel Interface
 type Modeler interface {
 	ID() uint64
+	BasicEntity() *ecs.BasicEntity
 	AppendChild(child *ecs.BasicEntity)
 
 	AddedRenderSystem(rs *engoCommon.RenderSystem)
@@ -117,8 +118,8 @@ func (em *EntityModel) Height() float32 {
 	return em.spaceComponent.Height
 }
 
-func (em *EntityModel) BasicEntity() ecs.BasicEntity {
-	return em.basicEntity
+func (em *EntityModel) BasicEntity() *ecs.BasicEntity {
+	return &em.basicEntity
 }
 
 func (em *EntityModel) SetDrawable(drawable engoCommon.Drawable) {
