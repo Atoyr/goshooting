@@ -69,7 +69,7 @@ func (gs *GameSystem) New(w *ecs.World) {
 		playerBuilder.AttackBuilderList = append(playerBuilder.AttackBuilderList, bb3)
 	}
 
-	playerBuilder.AttackIntervalFrame = 100
+	playerBuilder.AttackIntervalFrame = 10
 
 	playerBuilder.Attack = func(modeler entitys.Modeler, frame uint64) []entitys.Modeler {
 		modelers := make([]entitys.Modeler, 0)

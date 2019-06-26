@@ -12,6 +12,10 @@ import (
 
 type Player struct {
 	*EntityModel
+	*playerParam
+}
+
+type playerParam struct {
 	LowSpeed            float32
 	Speed               float32
 	Attack              func(modeler Modeler, frame uint64) []Modeler
@@ -78,7 +82,9 @@ func NewPlayerBuilder() PlayerBuilder {
 	model.SetPosition(engo.Point{X: 0, Y: 0})
 
 	player := new(Player)
+	param := new(playerParam)
 	player.EntityModel = &model
+	player.playerParam = param
 	player.AttackBuilderList = make([]Builder, 0)
 	player.AttackStartFrame = 0
 
@@ -88,9 +94,11 @@ func NewPlayerBuilder() PlayerBuilder {
 func (pb *PlayerBuilder) Build() Modeler {
 	entityModel := new(EntityModel)
 	player := new(Player)
+	param := new(playerParam)
 	copier.Copy(&entityModel, pb.EntityModel)
-	copier.Copy(&player, pb.Player)
+	copier.Copy(&param, pb.playerParam)
 	player.EntityModel = entityModel
+	player.playerParam = param
 	player.basicEntity = ecs.NewBasic()
 
 	return *player
@@ -100,9 +108,11 @@ func (pb *PlayerBuilder) Clone() Builder {
 	builder := new(PlayerBuilder)
 	entityModel := new(EntityModel)
 	player := new(Player)
+	param := new(playerParam)
 	copier.Copy(&entityModel, pb.EntityModel)
-	copier.Copy(&player, pb.Player)
+	copier.Copy(&param, pb.playerParam)
 	player.EntityModel = entityModel
+	player.playerParam = param
 	builder.Player = player
 
 	return builder
