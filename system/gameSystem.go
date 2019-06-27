@@ -18,9 +18,11 @@ type GameSystem struct {
 
 	entityList []entitys.Modeler
 
-	framecount     uint64
-	playerEntityID uint64
-	enemyIDs       []uint64
+	framecount      uint64
+	playerEntityID  uint64
+	playerBulletIDs []uint64
+	enemyIDs        []uint64
+	enemyBulletIDs  []uint64
 
 	builderCollection map[string]entitys.Builder
 }
@@ -149,8 +151,8 @@ func (gs *GameSystem) Update(dt float32) {
 		p.AddPosition(v)
 
 		// Move Player Bullet
-		for _, child := range p.BasicEntity().Children() {
-			if b, ok := gs.entityList[child.ID()].(entitys.Bullet); ok {
+		for _, id := range gs.playerBulletIDs {
+			if b, ok := gs.entityList[id].(entitys.Bullet); ok {
 				b.Move(gs.framecount)
 			}
 		}
@@ -161,10 +163,17 @@ func (gs *GameSystem) Update(dt float32) {
 				modelers := p.Attack(p, gs.framecount)
 				for _, m := range modelers {
 					m.AddedRenderSystem(gs.renderSystem)
-					p.AppendChild(m.BasicEntity())
+					gs.playerBulletIDs = append(gs.playerBulletIDs, m.ID())
 					gs.addModeler(m)
 				}
 			}
+		}
+	}
+
+	// Move Enemy Bullet
+	for _, id := range gs.enemyBulletIDs {
+		if b, ok := gs.entityList[id].(entitys.Bullet); ok {
+			b.Move(gs.framecount)
 		}
 	}
 
@@ -173,18 +182,11 @@ func (gs *GameSystem) Update(dt float32) {
 		if e, ok := gs.entityList[enemyid].(entitys.Enemy); ok {
 			// Move Enemy
 
-			// Move Enemy Bullet
-			for _, child := range e.BasicEntity().Children() {
-				if b, ok := gs.entityList[child.ID()].(entitys.Bullet); ok {
-					b.Move(gs.framecount)
-				}
-			}
-
 			// Attack for Enemy
 			modelers := e.Attack(e, gs.framecount)
 			for _, m := range modelers {
 				m.AddedRenderSystem(gs.renderSystem)
-				e.AppendChild(m.BasicEntity())
+				gs.enemyBulletIDs = append(gs.enemyBulletIDs, m.ID())
 				gs.addModeler(m)
 			}
 		}
