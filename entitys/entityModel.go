@@ -20,6 +20,8 @@ type Modeler interface {
 	SetHidden(hidden bool)
 
 	IsCollision(target Modeler) bool
+	AppendCollisionEntity(child *ecs.BasicEntity)
+	CollisionEntitys() []ecs.BasicEntity
 
 	Position() engo.Point
 	SetPosition(point engo.Point)
@@ -44,6 +46,8 @@ type EntityModel struct {
 	virtualPosition engo.Point // center of entity
 	scale           float32
 	hitPoint        int
+
+	collisionEntitys []ecs.BasicEntity
 }
 
 // ID is return BasicEntity.ID()
